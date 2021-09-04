@@ -315,7 +315,7 @@ if __name__ == '__main__':
         }, "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Dai's checkpoint/%s_last.pth" % args.exp_name)
 
         if best:
-            copyfile('saved_models/%s_last.pth' % args.exp_name, 'saved_models/%s_best.pth' % args.exp_name)
+            copyfile("/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Dai's checkpoint/%s_last.pth" % args.exp_name, "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Dai's checkpoint/%s_best.pth" % args.exp_name)
 
         if exit_train:
             writer.close()
