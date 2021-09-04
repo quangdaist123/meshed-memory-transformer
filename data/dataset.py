@@ -184,15 +184,15 @@ class COCO(PairedDataset):
         roots = {}
         roots['train'] = {
             'img': os.path.join(img_root, 'train'),
-            'cap': os.path.join(ann_root, 'uitviic_captions_train2014.json')
+            'cap': os.path.join(ann_root, 'annotations/uitviic_captions_train2017.json')
         }
         roots['val'] = {
             'img': os.path.join(img_root, 'val'),
-            'cap': os.path.join(ann_root, 'uitviic_captions_val2014.json')
+            'cap': os.path.join(ann_root, 'annotations/uitviic_captions_val2017.json')
         }
         roots['test'] = {
             'img': os.path.join(img_root, 'test'),
-            'cap': os.path.join(ann_root, 'uitviic_captions_test2014.json')
+            'cap': os.path.join(ann_root, 'annotations/uitviic_captions_test2017.json')
         }
         roots['trainrestval'] = {
             'img': (roots['train']['img'], roots['val']['img']),
@@ -201,18 +201,11 @@ class COCO(PairedDataset):
 
         if id_root is not None:
             ids = {}
-            ids['train'] = np.load(os.path.join(id_root, 'coco_train_ids.npy'))
-            ids['val'] = np.load(os.path.join(id_root, 'coco_dev_ids.npy'))
+            ids['train'] = np.load(os.path.join(id_root, 'annotations/for MESH model/coco_train_ids.npy'))
+            ids['val'] = np.load(os.path.join(id_root, 'annotations/for MESH model/coco_dev_ids.npy'))
             if cut_validation:
                 ids['val'] = ids['val'][:5000]
-            ids['test'] = np.load(os.path.join(id_root, 'coco_test_ids.npy'))
-            ids['trainrestval'] = (
-                ids['train'],
-                np.load(os.path.join(id_root, 'coco_restval_ids.npy')))
-
-            if use_restval:
-                roots['train'] = roots['trainrestval']
-                ids['train'] = ids['trainrestval']
+            ids['test'] = np.load(os.path.join(id_root, 'annotations/for MESH model/coco_test_ids.npy'))
         else:
             ids = None
 
