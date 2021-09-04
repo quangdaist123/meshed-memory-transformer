@@ -204,9 +204,9 @@ if __name__ == '__main__':
 
     if args.resume_last or args.resume_best:
         if args.resume_last:
-            fname = 'saved_models/%s_last.pth' % args.exp_name
+            fname = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Dai's checkpoint/%s_last.pth" % args.exp_name
         else:
-            fname = 'saved_models/%s_best.pth' % args.exp_name
+            fname = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Dai's checkpoint/%s_best.pth" % args.exp_name
 
         if os.path.exists(fname):
             data = torch.load(fname)
