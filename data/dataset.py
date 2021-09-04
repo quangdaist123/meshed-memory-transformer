@@ -201,11 +201,11 @@ class COCO(PairedDataset):
 
         if id_root is not None:
             ids = {}
-            ids['train'] = np.load(os.path.join(id_root, 'annotations/for MESH model/coco_train_ids.npy'))
-            ids['val'] = np.load(os.path.join(id_root, 'annotations/for MESH model/coco_dev_ids.npy'))
+            ids['train'] = np.load(os.path.join(id_root, 'annotations/for MESH model/uitviic_train_ids.npy'))
+            ids['val'] = np.load(os.path.join(id_root, 'annotations/for MESH model/uitviic_val_ids.npy'))
             if cut_validation:
                 ids['val'] = ids['val'][:5000]
-            ids['test'] = np.load(os.path.join(id_root, 'annotations/for MESH model/coco_test_ids.npy'))
+            ids['test'] = np.load(os.path.join(id_root, 'annotations/for MESH model/uitviic_test_ids.npy'))
         else:
             ids = None
 
