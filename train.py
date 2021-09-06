@@ -204,9 +204,9 @@ if __name__ == '__main__':
 
     if args.resume_last or args.resume_best:
         if args.resume_last:
-            fname = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Dai's checkpoint/%s_last.pth" % args.exp_name
+            fname = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_last.pth" % args.exp_name
         else:
-            fname = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Dai's checkpoint/%s_best.pth" % args.exp_name
+            fname = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_best.pth" % args.exp_name
 
         if os.path.exists(fname):
             data = torch.load(fname)
@@ -289,7 +289,7 @@ if __name__ == '__main__':
                 exit_train = True
 
         if switch_to_rl and not best:
-            data = torch.load("/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Dai's checkpoint/%s_best.pth" % args.exp_name)
+            data = torch.load("/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_best.pth" % args.exp_name)
             torch.set_rng_state(data['torch_rng_state'])
             torch.cuda.set_rng_state(data['cuda_rng_state'])
             np.random.set_state(data['numpy_rng_state'])
@@ -312,10 +312,10 @@ if __name__ == '__main__':
             'patience': patience,
             'best_cider': best_cider,
             'use_rl': use_rl,
-        }, "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Dai's checkpoint/%s_last.pth" % args.exp_name)
+        }, "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_last.pth" % args.exp_name)
 
         if best:
-            copyfile("/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Dai's checkpoint/%s_last.pth" % args.exp_name, "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Dai's checkpoint/%s_best.pth" % args.exp_name)
+            copyfile("/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_last.pth" % args.exp_name, "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_best.pth" % args.exp_name)
 
         if exit_train:
             writer.close()
