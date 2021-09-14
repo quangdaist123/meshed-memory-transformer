@@ -45,19 +45,19 @@ def get_tokenizer(tokenizer):
             print("Please install SpaCy and the SpaCy English tokenizer. "
                   "See the docs at https://spacy.io for more information.")
             raise
-        if tokenizer == "spacy-vi":
-            try:
-                import spacy
-                spacy_vi = spacy.load('vi_core_news_lg')
-                return lambda s: [tok.text for tok in spacy_vi.tokenizer(s)]
-            except ImportError:
-                print("Please install SpaCy and the SpaCy Vietnamese tokenizer. "
-                      "See the docs at https://spacy.io for more information.")
-                raise
-            except AttributeError:
-                print("Please install SpaCy and the SpaCy Vietnamese tokenizer. "
-                      "See the docs at https://spacy.io for more information.")
-                raise
+    elif tokenizer == "spacy-vi":
+        try:
+            import spacy
+            spacy_vi = spacy.load('vi_core_news_lg')
+            return lambda s: [tok.text for tok in spacy_vi.tokenizer(s)]
+        except ImportError:
+            print("Please install SpaCy and the SpaCy Vietnamese tokenizer. "
+                  "See the docs at https://spacy.io for more information.")
+            raise
+        except AttributeError:
+            print("Please install SpaCy and the SpaCy Vietnamese tokenizer. "
+                  "See the docs at https://spacy.io for more information.")
+            raise
     elif tokenizer == "moses":
         try:
             from nltk.tokenize.moses import MosesTokenizer
