@@ -152,10 +152,9 @@ if __name__ == '__main__':
     print(args)
 
     # Hardcode paths
-    args.exp_name = model_version
     args.features_path = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/uitviic_detections.hdf5"
     args.annotation_folder = "/content/drive/MyDrive/Images"
-
+    args.m = 40
 
     #
     print('Meshed-Memory Transformer Training')
