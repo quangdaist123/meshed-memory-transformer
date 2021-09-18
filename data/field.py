@@ -199,7 +199,7 @@ class TextField(RawField):
 
         for i in range(len(temp)):
             seq_len = temp[i].shape[1]
-            pad_token = torch.tensor(([1] * int(max_len - seq_len)), dtype=torch.int32)
+            pad_token = torch.tensor([[1] * int(max_len - seq_len)], dtype=torch.int32)
             temp[i] = torch.cat((temp[i], pad_token), 1)
         tensor = torch.cat(temp, 0)
         return tensor
