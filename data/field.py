@@ -186,8 +186,22 @@ class TextField(RawField):
             return x
 
     def process(self, batch, device=None):
-        padded = self.pad(batch)
-        tensor = self.numericalize(padded, device=device)
+        # padded = self.pad(batch)
+        # tensor = self.numericalize(padded, device=device)
+        import torch
+        from transformers import AutoTokenizer
+        tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base", use_fast=False)
+        temp = [tokenizer.encode_plus(line, return_tensors="pt").input_ids for line in batch]
+        max_len = 0
+        for line in temp:
+            if line.shape[1] > max_len:
+                max_len = line.shape[1]
+
+        for i in range(len(temp)):
+            seq_len = temp[i].shape[1]
+            pad_token = torch.tensor(([1] * int(max_len - seq_len)), dtype=torch.int32)
+            temp[i] = torch.cat((temp[i], pad_token), 1)
+        tensor = torch.cat(temp, 0)
         return tensor
 
     def build_vocab(self, *args, **kwargs):
@@ -215,6 +229,7 @@ class TextField(RawField):
 
     def pad(self, minibatch):
         print("pad", pad)
+        # tuple of list of string
         """Pad a batch of examples using this field.
         Pads to self.fix_length if provided, otherwise pads to the length of
         the longest example in the batch. Prepends self.init_token and appends
@@ -262,7 +277,7 @@ class TextField(RawField):
                 If left as default, the tensors will be created on cpu. Default: None.
         """
         print("Đã pad")
-        print(arr)
+        print(arr) # List of list of strings
         if self.include_lengths and not isinstance(arr, tuple):
             raise ValueError("Field has include_lengths set to True, but "
                              "input data is not a tuple of "
@@ -308,7 +323,7 @@ class TextField(RawField):
             return var, lengths
 
         print("var.shape")
-        print(var.shape)
+        print(var.shape) # Tensor (bs, maxlen in bs)
         print(var)
         print("###################")
         exit()

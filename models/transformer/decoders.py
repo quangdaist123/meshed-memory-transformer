@@ -59,7 +59,10 @@ class MeshedDecoder(Module):
                  self_att_module=None, enc_att_module=None, self_att_module_kwargs=None, enc_att_module_kwargs=None):
         super(MeshedDecoder, self).__init__()
         self.d_model = d_model
-        self.word_emb = nn.Embedding(vocab_size, d_model, padding_idx=padding_idx)
+        # self.word_emb = nn.Embedding(vocab_size, d_model, padding_idx=padding_idx)
+        import torch
+        from transformers import AutoModel
+        self.word_emb = AutoModel.from_pretrained("vinai/phobert-base")
         self.pos_emb = nn.Embedding.from_pretrained(sinusoid_encoding_table(max_len + 1, d_model, 0), freeze=True)
         self.layers = ModuleList(
             [MeshedDecoderLayer(d_model, d_k, d_v, h, d_ff, dropout, self_att_module=self_att_module,
@@ -92,7 +95,7 @@ class MeshedDecoder(Module):
             self.running_seq.add_(1)
             seq = self.running_seq
 
-        out = self.word_emb(input) + self.pos_emb(seq)
+        out = self.word_emb(input).last_hidden_state + self.pos_emb(seq)
         for i, l in enumerate(self.layers):
             out = l(out, encoder_output, mask_queries, mask_self_attention, mask_encoder)
 

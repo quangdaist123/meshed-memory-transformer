@@ -61,11 +61,7 @@ def get_tokenizer(tokenizer):
     elif tokenizer == "phobert":
         try:
             import torch
-            from transformers import AutoModel, AutoTokenizer
-
-            phobert = AutoModel.from_pretrained("vinai/phobert-base")
-
-            # For transformers v4.x+:
+            from transformers import AutoTokenizer
             tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base", use_fast=False)
             return lambda s: tokenizer.encode(s)
         except ImportError:

@@ -139,7 +139,7 @@ if __name__ == '__main__':
     device = torch.device('cuda')
     parser = argparse.ArgumentParser(description='Meshed-Memory Transformer')
     parser.add_argument('--exp_name', type=str)
-    parser.add_argument('--batch_size', type=int, default=32)
+    parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--workers', type=int, default=8)
     parser.add_argument('--head', type=int, default=8)
     parser.add_argument('--warmup', type=int, default=10000)
@@ -165,7 +165,7 @@ if __name__ == '__main__':
     image_field = ImageDetectionsField(detections_path=args.features_path, max_detections=50, load_in_tmp=False)
 
     # Pipeline for text
-    text_field = TextField(use_vocab=True, init_token='<bos>', eos_token='<eos>', lower=True, tokenize='spacy',
+    text_field = TextField(use_vocab=True, init_token='<bos>', eos_token='<eos>', lower=True, tokenize='phobert',
                            remove_punctuation=True, nopoints=False)
 
     # Create the dataset
