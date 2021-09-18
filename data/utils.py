@@ -58,6 +58,22 @@ def get_tokenizer(tokenizer):
             print("Please install SpaCy and the SpaCy Vietnamese tokenizer. "
                   "See the docs at https://spacy.io for more information.")
             raise
+    elif tokenizer == "phobert":
+        try:
+            import torch
+            from transformers import AutoModel, AutoTokenizer
+
+            phobert = AutoModel.from_pretrained("vinai/phobert-base")
+
+            # For transformers v4.x+:
+            tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base", use_fast=False)
+            return lambda s: tokenizer.encode(s)
+        except ImportError:
+            print("Please install #### Phobert.")
+            raise
+        except AttributeError:
+            print("Please install #### Phobert")
+            raise
     elif tokenizer == "moses":
         try:
             from nltk.tokenize.moses import MosesTokenizer

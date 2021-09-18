@@ -112,7 +112,7 @@ class ImageDetectionsField(RawField):
                 precomp_data = precomp_data[np.argsort(np.max(f['%d_cls_prob' % image_id][()], -1))[::-1]]
         except KeyError:
             warnings.warn('Could not find detections for %d' % image_id)
-            precomp_data = np.random.rand(10,2048)
+            precomp_data = np.random.rand(10, 2048)
 
         delta = self.max_detections - precomp_data.shape[0]
         if delta > 0:
@@ -214,6 +214,7 @@ class TextField(RawField):
         self.vocab = self.vocab_cls(counter, specials=specials, **kwargs)
 
     def pad(self, minibatch):
+        print("pad", pad)
         """Pad a batch of examples using this field.
         Pads to self.fix_length if provided, otherwise pads to the length of
         the longest example in the batch. Prepends self.init_token and appends
@@ -260,6 +261,8 @@ class TextField(RawField):
                 specifying which device the Variables are going to be created on.
                 If left as default, the tensors will be created on cpu. Default: None.
         """
+        print("Đã pad")
+        print(arr)
         if self.include_lengths and not isinstance(arr, tuple):
             raise ValueError("Field has include_lengths set to True, but "
                              "input data is not a tuple of "
@@ -303,6 +306,12 @@ class TextField(RawField):
 
         if self.include_lengths:
             return var, lengths
+
+        print("var.shape")
+        print(var.shape)
+        print(var)
+        print("###################")
+        exit()
         return var
 
     def decode(self, word_idxs, join_words=True):
