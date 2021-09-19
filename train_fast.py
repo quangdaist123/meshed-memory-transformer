@@ -32,7 +32,7 @@ def evaluate_loss(model, dataloader, loss_fn, text_field):
                 out = model(detections, captions)
                 captions = captions[:, 1:].contiguous()
                 out = out[:, :-1].contiguous()
-                loss = loss_fn(out.view(-1, len(text_field.vocab)), captions.view(-1))
+                loss = loss_fn(out.view(-1, 64000), captions.view(-1))
                 this_loss = loss.item()
                 running_loss += this_loss
 
@@ -77,7 +77,7 @@ def train_xe(model, dataloader, optim, text_field):
             optim.zero_grad()
             captions_gt = captions[:, 1:].contiguous()
             out = out[:, :-1].contiguous()
-            loss = loss_fn(out.view(-1, len(text_field.vocab)), captions_gt.view(-1))
+            loss = loss_fn(out.view(-1, 64000), captions_gt.view(-1))
             loss.backward()
 
             optim.step()
@@ -182,7 +182,7 @@ if __name__ == '__main__':
     # Model and dataloaders
     encoder = MemoryAugmentedEncoder(3, 0, attention_module=ScaledDotProductAttentionMemory,
                                      attention_module_kwargs={'m': args.m})
-    decoder = MeshedDecoder(len(text_field.vocab), 54, 3, text_field.vocab.stoi['<pad>'], d_model=768, d_k=96, d_v=96, vocab_size=640000)
+    decoder = MeshedDecoder(64000, 54, 3, text_field.vocab.stoi['<pad>'], d_model=768, d_k=96, d_v=)
     model = Transformer(text_field.vocab.stoi['<bos>'], encoder, decoder).to(device)
 
     dict_dataset_train = train_dataset.image_dictionary({'image': image_field, 'text': RawField()})
