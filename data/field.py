@@ -339,15 +339,27 @@ class TextField(RawField):
         elif isinstance(word_idxs, torch.Tensor) and word_idxs.ndimension() == 1:
             return self.decode(word_idxs.unsqueeze(0), join_words)[0]
 
+        from transformers import AutoTokenizer
+        import torch
+        # For transformers v4.x+:
+        tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base", use_fast=False)
+
         captions = []
-        for wis in word_idxs:
-            caption = []
-            for wi in wis:
-                word = self.vocab.itos[int(wi)]
-                if word == self.eos_token:
-                    break
-                caption.append(word)
-            if join_words:
-                caption = ' '.join(caption)
-            captions.append(caption)
+        for line in word_idxs:
+            words = []
+            for word in line:
+                words.append(tokenizer.decode([word]))
+            captions.append(words)
         return captions
+        # captions = []
+        # for wis in word_idxs:
+        #     caption = []
+        #     for wi in wis:
+        #         word = self.vocab.itos[int(wi)]
+        #         if word == self.eos_token:
+        #             break
+        #         caption.append(word)
+        #     if join_words:
+        #         caption = ' '.join(caption)
+        #     captions.append(caption)
+        # return captions
