@@ -65,7 +65,7 @@ if __name__ == '__main__':
     # Model and dataloaders
     encoder = MemoryAugmentedEncoder(3, 0, attention_module=ScaledDotProductAttentionMemory,
                                      attention_module_kwargs={'m': 40})
-    decoder = MeshedDecoder(len(text_field.vocab), 54, 3, text_field.vocab.stoi['<pad>'])
+    decoder = MeshedDecoder(64000, 54, 3, text_field.vocab.stoi['<pad>'], d_model=768, d_v=96, d_k=96)
     model = Transformer(text_field.vocab.stoi['<bos>'], encoder, decoder).to(device)
 
     data = torch.load('meshed_memory_transformer.pth')

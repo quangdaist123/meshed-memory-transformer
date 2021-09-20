@@ -340,8 +340,6 @@ class TextField(RawField):
             return self.decode(word_idxs.unsqueeze(0), join_words)[0]
 
         from transformers import AutoTokenizer
-        import torch
-        # For transformers v4.x+:
         tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base", use_fast=False)
 
         captions = []
