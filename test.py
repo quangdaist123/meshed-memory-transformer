@@ -48,6 +48,11 @@ if __name__ == '__main__':
     parser.add_argument('--annotation_folder', type=str)
     args = parser.parse_args()
 
+    # Hardcode paths
+    args.features_path = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/uitviic_detections.hdf5"
+    args.annotation_folder = "/content/drive/MyDrive/Images"
+    args.m = 40
+
     print('Meshed-Memory Transformer Evaluation')
 
     # Pipeline for image regions
