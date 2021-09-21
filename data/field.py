@@ -177,6 +177,14 @@ class TextField(RawField):
             x = six.text_type(x, encoding='utf-8')
         if self.lower:
             x = six.text_type.lower(x)
+
+        # Segment input
+        from vncorenlp import VnCoreNLP
+        rdrsegmenter = VnCoreNLP("/content/vncorenlp/VnCoreNLP-1.1.1.jar", annotators="wseg", max_heap_size='-Xmx500m')
+        sentences = rdrsegmenter.tokenize(x)
+        for sentence in sentences:
+            x = " ".join(sentence)
+
         x = self.tokenize(x.rstrip('\n'))
         if self.remove_punctuation:
             x = [w for w in x if w not in self.punctuations]
