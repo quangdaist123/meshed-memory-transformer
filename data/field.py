@@ -199,7 +199,7 @@ class TextField(RawField):
         import torch
         from transformers import AutoTokenizer
         tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base", use_fast=False)
-        temp = [tokenizer.encode_plus(line, return_tensors="pt").input_ids for line in batch]
+        temp = [tokenizer.encode_plus(line, return_tensors="pt", add_special_tokens=False).input_ids for line in batch]
         max_len = 0
         for line in temp:
             if line.shape[1] > max_len:
