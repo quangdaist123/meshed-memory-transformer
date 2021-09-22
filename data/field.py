@@ -105,6 +105,10 @@ class ImageDetectionsField(RawField):
 
     def preprocess(self, x, avoid_precomp=False):
         image_id = int(x.split('/')[-1].split('.')[0])
+        ff = open("mesh_caps_ids.txt", "a+", encoding="utf8")
+        ff.write(str(image_id))
+        ff.write("\n")
+        ff.close()
         try:
             f = h5py.File(self.detections_path, 'r')
             precomp_data = f['%d_features' % image_id][()]

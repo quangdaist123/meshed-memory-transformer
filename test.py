@@ -21,7 +21,6 @@ def predict_captions(model, dataloader, text_field):
     model.eval()
     gen = {}
     gts = {}
-    f = open("mesh_results.json", "w+", encoding="utf8")
     result = []
     with tqdm(desc='Evaluation', unit='it', total=len(dataloader)) as pbar:
         for it, (images, caps_gt) in enumerate(iter(dataloader)):
@@ -31,15 +30,35 @@ def predict_captions(model, dataloader, text_field):
             caps_gen = text_field.decode(out, join_words=False)
             for i, (gts_i, gen_i) in enumerate(zip(caps_gt, caps_gen)):
                 gen_i = ' '.join([k for k, g in itertools.groupby(gen_i)])
-                result.append({"pred": gen_i.strip(), "gt":gts_i})
+                ff = open("mesh_caps_ids.txt", "a+", encoding="utf8")
+                ff.write(gen_i.strip())
+                ff.write("\n")
+                ff.close()
                 gen['%d_%d' % (it, i)] = [gen_i.strip(), ]
                 gts['%d_%d' % (it, i)] = gts_i
             pbar.update()
     json.dump(result, f, ensure_ascii=False)
-    f.close()
     gts = evaluation.PTBTokenizer.tokenize(gts)
     gen = evaluation.PTBTokenizer.tokenize(gen)
     scores, _ = evaluation.compute_scores(gts, gen)
+
+    # Write result in json format
+    import json
+    temp = []
+    with open("/content/mesh_caps_ids.txt", "r") as f:
+        for line in f:
+            temp.append(line.replace("\n", ""))
+
+    f = open("mesh_caps_ids_gts.json", "w+")
+    results = []
+    index = 0
+    while index != len(temp):
+        res = {"id": temp[index], "pred": temp[index + 1], "gts": temp[index + 2:index + 7]}
+        results.append(res)
+        index += 7
+    json.dump(results, f, ensure_ascii=False)
+    f.close()
+
 
     return scores
 
@@ -48,7 +67,7 @@ if __name__ == '__main__':
     device = torch.device('cuda')
 
     parser = argparse.ArgumentParser(description='Meshed-Memory Transformer')
-    parser.add_argument('--batch_size', type=int, default=10)
+    parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument('--workers', type=int, default=0)
     parser.add_argument('--features_path', type=str)
     parser.add_argument('--annotation_folder', type=str)
