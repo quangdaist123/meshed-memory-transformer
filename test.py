@@ -8,10 +8,12 @@ from tqdm import tqdm
 import argparse
 import pickle
 import numpy as np
+import json
 
 random.seed(1234)
 torch.manual_seed(1234)
 np.random.seed(1234)
+
 
 
 def predict_captions(model, dataloader, text_field):
@@ -19,6 +21,8 @@ def predict_captions(model, dataloader, text_field):
     model.eval()
     gen = {}
     gts = {}
+    f = open("mesh_results.json", "w+", encoding="utf8")
+    result = []
     with tqdm(desc='Evaluation', unit='it', total=len(dataloader)) as pbar:
         for it, (images, caps_gt) in enumerate(iter(dataloader)):
             images = images.to(device)
@@ -27,10 +31,12 @@ def predict_captions(model, dataloader, text_field):
             caps_gen = text_field.decode(out, join_words=False)
             for i, (gts_i, gen_i) in enumerate(zip(caps_gt, caps_gen)):
                 gen_i = ' '.join([k for k, g in itertools.groupby(gen_i)])
+                result.append({"pred": gen_i.strip(), "gt":gts_i})
                 gen['%d_%d' % (it, i)] = [gen_i.strip(), ]
                 gts['%d_%d' % (it, i)] = gts_i
             pbar.update()
-
+    json.dump(result, f, ensure_ascii=False)
+    f.close()
     gts = evaluation.PTBTokenizer.tokenize(gts)
     gen = evaluation.PTBTokenizer.tokenize(gen)
     scores, _ = evaluation.compute_scores(gts, gen)
