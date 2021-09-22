@@ -71,7 +71,7 @@ if __name__ == '__main__':
     # Create the dataset
     dataset = COCO(image_field, text_field, 'coco/images/', args.annotation_folder, args.annotation_folder)
     _, _, test_dataset = dataset.splits
-    text_field.vocab = pickle.load(open('vocab.pkl', 'rb'))
+    text_field.vocab = pickle.load(open('vocab_.pkl', 'rb'))
 
     # Model and dataloaders
     encoder = MemoryAugmentedEncoder(3, 0, attention_module=ScaledDotProductAttentionMemory,
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     decoder = MeshedDecoder(len(text_field.vocab), 54, 3, text_field.vocab.stoi['<pad>'])
     model = Transformer(text_field.vocab.stoi['<bos>'], encoder, decoder).to(device)
 
-    data = torch.load('meshed_memory_transformer.pth')
+    data = torch.load('/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/original_best_real.pth')
     model.load_state_dict(data['state_dict'])
 
     dict_dataset_test = test_dataset.image_dictionary({'image': image_field, 'text': RawField()})
