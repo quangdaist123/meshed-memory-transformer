@@ -24,9 +24,9 @@ class Transformer(CaptioningModel):
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
 
-    def forward(self, images, seq, *args):
+    def forward(self, images, seq, padding_mask, *args):
         enc_output, mask_enc = self.encoder(images)
-        dec_output = self.decoder(seq, enc_output, mask_enc)
+        dec_output = self.decoder(seq, enc_output, mask_enc, padding_mask)
         return dec_output
 
     def init_state(self, b_s, device):

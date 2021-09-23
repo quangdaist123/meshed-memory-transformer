@@ -196,16 +196,14 @@ class TextField(RawField):
     def process(self, batch, device=None):
         # padded = self.pad(batch)
         # tensor = self.numericalize(padded, device=device)
-        import torch
-        from transformers import AutoTokenizer
-        tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base", use_fast=False)
-        temp = [tokenizer.encode_plus(line, return_tensors="pt", add_special_tokens=False).input_ids for line in batch]
+
+        temp = [torch.tensor([line]) for line in batch]
         max_len = 0
         for line in temp:
             if line.shape[1] > max_len:
                 max_len = line.shape[1]
 
-        attention_mask = []
+        padding_mask = []
         for i in range(len(temp)):
             seq_len = temp[i].shape[1]
             pad_num = int(max_len - seq_len)
@@ -214,28 +212,28 @@ class TextField(RawField):
             # attention mask
             unpadded = torch.tensor([[1] * seq_len], dtype=torch.int32)
             padded = torch.tensor([[0] * (max_len - seq_len)], dtype=torch.int32)
-            attention_mask.append(torch.cat((unpadded, padded), 1))
-        attention_mask = torch.cat(attention_mask, 0)
+            padding_mask.append(torch.cat((unpadded, padded), 1))
+        padding_mask = torch.cat(padding_mask, 0)
         tensor = torch.cat(temp, 0)
-
-        return tensor
+        result = {"input_ids": tensor, "padding_mask": padding_mask}
+        return result
 
     def build_vocab(self, *args, **kwargs):
         counter = Counter()
         sources = []
-        for arg in args:
-            if isinstance(arg, Dataset):
-                sources += [getattr(arg, name) for name, field in arg.fields.items() if field is self]
-            else:
-                sources.append(arg)
-
-        for data in sources:
-            for x in data:
-                x = self.preprocess(x)
-                try:
-                    counter.update(x)
-                except TypeError:
-                    counter.update(chain.from_iterable(x))
+        # for arg in args:
+        #     if isinstance(arg, Dataset):
+        #         sources += [getattr(arg, name) for name, field in arg.fields.items() if field is self]
+        #     else:
+        #         sources.append(arg)
+        # 
+        # for data in sources:
+        #     for x in data:
+        #         x = self.preprocess(x)
+        #         try:
+        #             counter.update(x)
+        #         except TypeError:
+        #             counter.update(chain.from_iterable(x))
 
         specials = list(OrderedDict.fromkeys([
             tok for tok in [self.unk_token, self.pad_token, self.init_token,
