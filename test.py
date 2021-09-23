@@ -65,7 +65,7 @@ if __name__ == '__main__':
     # Pipeline for image regions
     image_field = ImageDetectionsField(detections_path=args.features_path, max_detections=50, load_in_tmp=False)
 
-    # Pipeline for text
+    # Pipeline for texts
     text_field = TextField(init_token='<bos>', eos_token='<eos>', lower=True, tokenize='spacy-vi',
                            remove_punctuation=True, nopoints=False)
 

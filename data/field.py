@@ -205,11 +205,19 @@ class TextField(RawField):
             if line.shape[1] > max_len:
                 max_len = line.shape[1]
 
+        attention_mask = []
         for i in range(len(temp)):
             seq_len = temp[i].shape[1]
-            pad_token = torch.tensor([[1] * int(max_len - seq_len)], dtype=torch.int32)
+            pad_num = int(max_len - seq_len)
+            pad_token = torch.tensor([[1] * pad_num], dtype=torch.int32)
             temp[i] = torch.cat((temp[i], pad_token), 1)
+            # attention mask
+            unpadded = torch.tensor([[1] * seq_len], dtype=torch.int32)
+            padded = torch.tensor([[0] * (max_len - seq_len)], dtype=torch.int32)
+            attention_mask.append(torch.cat((unpadded, padded), 1))
+        attention_mask = torch.cat(attention_mask, 0)
         tensor = torch.cat(temp, 0)
+
         return tensor
 
     def build_vocab(self, *args, **kwargs):
