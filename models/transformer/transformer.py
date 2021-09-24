@@ -26,7 +26,7 @@ class Transformer(CaptioningModel):
 
     def forward(self, images, seq, padding_mask, *args):
         enc_output, mask_enc = self.encoder(images)
-        dec_output = self.decoder(seq, enc_output, mask_enc, padding_mask)
+        dec_output = self.decoder(seq, padding_mask, enc_output, mask_enc)
         return dec_output
 
     def init_state(self, b_s, device):
