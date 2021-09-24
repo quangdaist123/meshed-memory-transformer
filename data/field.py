@@ -14,6 +14,7 @@ from .dataset import Dataset
 from .vocab import Vocab
 from .utils import get_tokenizer
 
+from vncorenlp import VnCoreNLP
 
 class RawField(object):
     """ Defines a general datatype.
@@ -167,6 +168,7 @@ class TextField(RawField):
         self.truncate_first = truncate_first
         self.vocab = None
         self.vectors = vectors
+        self.segmenter = VnCoreNLP("/content/vncorenlp/VnCoreNLP-1.1.1.jar", annotators="wseg", max_heap_size='-Xmx500m')
         if nopoints:
             self.punctuations.append("..")
 
@@ -179,9 +181,7 @@ class TextField(RawField):
             x = six.text_type.lower(x)
 
         # Segment input
-        from vncorenlp import VnCoreNLP
-        rdrsegmenter = VnCoreNLP("/content/vncorenlp/VnCoreNLP-1.1.1.jar", annotators="wseg", max_heap_size='-Xmx500m')
-        sentences = rdrsegmenter.tokenize(x)
+        sentences = self.segmenter.tokenize(x)
         for sentence in sentences:
             x = " ".join(sentence)
 
