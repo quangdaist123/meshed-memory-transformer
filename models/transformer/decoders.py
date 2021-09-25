@@ -78,8 +78,8 @@ class MeshedDecoder(Module):
         self.register_state('running_seq', torch.zeros((1,)).long())
 
     def forward(self, input, encoder_output, mask_encoder):
-        if isinstance(input, tuple):
-            temp = [torch.tensor([self.tokenizer.encode(line)]) for line in input]
+        if input[0] is not None and isinstance(input, tuple):
+            temp = [torch.tensor([self.tokenizer.encode(line)]) for line in input if line]
             max_len = 0
             for line in temp:
                 if line.shape[1] > max_len:
@@ -97,6 +97,7 @@ class MeshedDecoder(Module):
                 padding_mask.append(torch.cat((unpadded, padded), 1))
             padding_mask = torch.cat(padding_mask, 0)
             input = torch.cat(temp, 0)
+
             input, padding_mask = input.to("cuda"), padding_mask.to("cuda")
 
         b_s, seq_len = input.shape[:2]
@@ -115,7 +116,7 @@ class MeshedDecoder(Module):
         if self._is_stateful:
             self.running_seq.add_(1)
             seq = self.running_seq
-        if isinstance(input, tuple):
+        if input[0] is not None and isinstance(input, tuple):
             out = self.word_emb(input, attention_mask=padding_mask).last_hidden_state + self.pos_emb(seq)
         else:
             out = self.word_emb(input).last_hidden_state + self.pos_emb(seq)
