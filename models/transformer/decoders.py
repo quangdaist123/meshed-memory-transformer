@@ -61,7 +61,8 @@ class MeshedDecoder(Module):
         self.d_model = d_model
         # self.word_emb = nn.Embedding(vocab_size, d_model, padding_idx=padding_idx)
         import torch
-        from transformers import AutoModel
+        from transformers import AutoModel, AutoTokenizer
+        self.tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base", use_fast=False)
         self.word_emb = AutoModel.from_pretrained("vinai/phobert-base")
         self.pos_emb = nn.Embedding.from_pretrained(sinusoid_encoding_table(max_len + 1, d_model, 0), freeze=True)
         self.layers = ModuleList(

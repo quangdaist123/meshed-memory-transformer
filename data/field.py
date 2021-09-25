@@ -197,26 +197,26 @@ class TextField(RawField):
         # padded = self.pad(batch)
         # tensor = self.numericalize(padded, device=device)
 
-        temp = [torch.tensor([self.tokenize.encode(line)]) for line in batch]
-        max_len = 0
-        for line in temp:
-            if line.shape[1] > max_len:
-                max_len = line.shape[1]
-
-        padding_mask = []
-        for i in range(len(temp)):
-            seq_len = temp[i].shape[1]
-            pad_num = int(max_len - seq_len)
-            pad_token = torch.tensor([[1] * pad_num], dtype=torch.int32)
-            temp[i] = torch.cat((temp[i], pad_token), 1)
-            # attention mask
-            unpadded = torch.tensor([[1] * seq_len], dtype=torch.int32)
-            padded = torch.tensor([[0] * (max_len - seq_len)], dtype=torch.int32)
-            padding_mask.append(torch.cat((unpadded, padded), 1))
-        padding_mask = torch.cat(padding_mask, 0)
-        tensor = torch.cat(temp, 0)
-        result = {"input_ids": tensor, "padding_mask": padding_mask}
-        return result
+        # temp = [torch.tensor([self.tokenize.encode(line)]) for line in batch]
+        # max_len = 0
+        # for line in temp:
+        #     if line.shape[1] > max_len:
+        #         max_len = line.shape[1]
+        #
+        # padding_mask = []
+        # for i in range(len(temp)):
+        #     seq_len = temp[i].shape[1]
+        #     pad_num = int(max_len - seq_len)
+        #     pad_token = torch.tensor([[1] * pad_num], dtype=torch.int32)
+        #     temp[i] = torch.cat((temp[i], pad_token), 1)
+        #     # attention mask
+        #     unpadded = torch.tensor([[1] * seq_len], dtype=torch.int32)
+        #     padded = torch.tensor([[0] * (max_len - seq_len)], dtype=torch.int32)
+        #     padding_mask.append(torch.cat((unpadded, padded), 1))
+        # padding_mask = torch.cat(padding_mask, 0)
+        # tensor = torch.cat(temp, 0)
+        # result = {"input_ids": tensor, "padding_mask": padding_mask}
+        return batch
 
     def build_vocab(self, *args, **kwargs):
         counter = Counter()
