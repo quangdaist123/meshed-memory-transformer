@@ -77,7 +77,27 @@ class MeshedDecoder(Module):
         self.register_state('running_seq', torch.zeros((1,)).long())
 
     def forward(self, input, encoder_output, mask_encoder):
-        # input (b_s, seq_len)
+        if isinstance(input, tuple):
+            temp = [torch.tensor([self.tokenizer.encode(line)]) for line in input]
+            max_len = 0
+            for line in temp:
+                if line.shape[1] > max_len:
+                    max_len = line.shape[1]
+
+            padding_mask = []
+            for i in range(len(temp)):
+                seq_len = temp[i].shape[1]
+                pad_num = int(max_len - seq_len)
+                pad_token = torch.tensor([[1] * pad_num], dtype=torch.int32)
+                temp[i] = torch.cat((temp[i], pad_token), 1)
+                # attention mask
+                unpadded = torch.tensor([[1] * seq_len], dtype=torch.int32)
+                padded = torch.tensor([[0] * (max_len - seq_len)], dtype=torch.int32)
+                padding_mask.append(torch.cat((unpadded, padded), 1))
+            padding_mask = torch.cat(padding_mask, 0)
+            input = torch.cat(temp, 0)
+            input, padding_mask = input.to("cuda"), padding_mask.to("cuda")
+
         b_s, seq_len = input.shape[:2]
         mask_queries = (input != self.padding_idx).unsqueeze(-1).float()  # (b_s, seq_len, 1)
         mask_self_attention = torch.triu(torch.ones((seq_len, seq_len), dtype=torch.uint8, device=input.device),
@@ -94,8 +114,10 @@ class MeshedDecoder(Module):
         if self._is_stateful:
             self.running_seq.add_(1)
             seq = self.running_seq
-
-        out = self.word_emb(input).last_hidden_state + self.pos_emb(seq)
+        if isinstance(input, tuple):
+            out = self.word_emb(input, attention_mask=padding_mask).last_hidden_state + self.pos_emb(seq)
+        else:
+            out = self.word_emb(input).last_hidden_state + self.pos_emb(seq)
         for i, l in enumerate(self.layers):
             out = l(out, encoder_output, mask_queries, mask_self_attention, mask_encoder)
 

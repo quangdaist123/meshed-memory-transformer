@@ -197,7 +197,7 @@ class TextField(RawField):
         # padded = self.pad(batch)
         # tensor = self.numericalize(padded, device=device)
 
-        temp = [torch.tensor([line]) for line in batch]
+        temp = [torch.tensor([self.tokenize.encode(line)]) for line in batch]
         max_len = 0
         for line in temp:
             if line.shape[1] > max_len:

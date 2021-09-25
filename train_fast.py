@@ -19,6 +19,10 @@ from shutil import copyfile
 random.seed(1234)
 torch.manual_seed(1234)
 np.random.seed(1234)
+from transformers import AutoModel, AutoTokenizer
+import torch
+
+tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base", use_fast=False)
 
 
 def evaluate_loss(model, dataloader, loss_fn, text_field):
@@ -28,10 +32,14 @@ def evaluate_loss(model, dataloader, loss_fn, text_field):
     with tqdm(desc='Epoch %d - validation' % e, unit='it', total=len(dataloader)) as pbar:
         with torch.no_grad():
             for it, (detections, captions) in enumerate(dataloader):
-                input_ids, _, padding_mask = captions.values()
-                detections, captions, padding_mask = detections.to(device), input_ids.to(device), padding_mask.to(device)
-                out = model(detections, captions, padding_mask)
-                captions = captions[:, 1:].contiguous()
+                detections, captions = detections.to(device), captions
+                out = model(detections, captions)
+                optim.zero_grad()
+
+                temp = [tokenizer.convert_tokens_to_string(line) for line in captions]
+                result = tokenizer(temp, padding=True)
+                result = result.convert_to_tensors("pt")
+                captions = result["input_ids"].to("cuda")
                 out = out[:, :-1].contiguous()
                 loss = loss_fn(out.view(-1, 64000), captions.view(-1))
                 this_loss = loss.item()
@@ -73,10 +81,15 @@ def train_xe(model, dataloader, optim, text_field):
     running_loss = .0
     with tqdm(desc='Epoch %d - train' % e, unit='it', total=len(dataloader)) as pbar:
         for it, (detections, captions) in enumerate(dataloader):
-            input_ids, _, padding_mask = captions.values()
-            detections, captions, padding_mask = detections.to(device), input_ids.to(device), padding_mask.to(device),
-            out = model(detections, captions, padding_mask)
+            detections, captions = detections.to(device), captions
+            out = model(detections, captions)
             optim.zero_grad()
+
+            temp = [tokenizer.convert_tokens_to_string(line) for line in captions]
+            result = tokenizer(temp, padding=True)
+            result = result.convert_to_tensors("pt")
+            captions = result["input_ids"].to("cuda")
+
             captions_gt = captions[:, 1:].contiguous()
             out = out[:, :-1].contiguous()
             loss = loss_fn(out.view(-1, 64000), captions_gt.view(-1))
@@ -211,9 +224,11 @@ if __name__ == '__main__':
 
     if args.resume_last or args.resume_best:
         if args.resume_last:
-            fname = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_last.pth" % args.exp_name
+            fname = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_last.pth" % \
+                    args.exp_name
         else:
-            fname = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_best.pth" % args.exp_name
+            fname = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_best.pth" % \
+                    args.exp_name
 
         if os.path.exists(fname):
             data = torch.load(fname)
@@ -245,7 +260,8 @@ if __name__ == '__main__':
             train_loss = train_xe(model, dataloader_train, optim, text_field)
             writer.add_scalar('data/train_loss', train_loss, e)
         else:
-            train_loss, reward, reward_baseline = train_scst(model, dict_dataloader_train, optim, cider_train, text_field)
+            train_loss, reward, reward_baseline = train_scst(model, dict_dataloader_train, optim, cider_train,
+                                                             text_field)
             writer.add_scalar('data/train_loss', train_loss, e)
             writer.add_scalar('data/reward', reward, e)
             writer.add_scalar('data/reward_baseline', reward_baseline, e)
@@ -296,7 +312,8 @@ if __name__ == '__main__':
                 exit_train = True
 
         if switch_to_rl and not best:
-            data = torch.load("/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_best.pth" % args.exp_name)
+            data = torch.load(
+                "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_best.pth" % args.exp_name)
             torch.set_rng_state(data['torch_rng_state'])
             torch.cuda.set_rng_state(data['cuda_rng_state'])
             np.random.set_state(data['numpy_rng_state'])
@@ -322,7 +339,9 @@ if __name__ == '__main__':
         }, "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_last.pth" % args.exp_name)
 
         if best:
-            copyfile("/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_last.pth" % args.exp_name, "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_best.pth" % args.exp_name)
+            copyfile(
+                "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_last.pth" % args.exp_name,
+                "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_best.pth" % args.exp_name)
 
         if exit_train:
             writer.close()
