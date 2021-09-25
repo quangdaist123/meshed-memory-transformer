@@ -196,9 +196,26 @@ class TextField(RawField):
     def process(self, batch, device=None):
         # padded = self.pad(batch)
         # tensor = self.numericalize(padded, device=device)
-        temp = [self.tokenize.convert_tokens_to_string(line) for line in batch]
-        result = self.tokenize(temp, padding=True)
-        result = result.convert_to_tensors("pt")
+
+        temp = [torch.tensor([line]) for line in batch]
+        max_len = 0
+        for line in temp:
+            if line.shape[1] > max_len:
+                max_len = line.shape[1]
+
+        padding_mask = []
+        for i in range(len(temp)):
+            seq_len = temp[i].shape[1]
+            pad_num = int(max_len - seq_len)
+            pad_token = torch.tensor([[1] * pad_num], dtype=torch.int32)
+            temp[i] = torch.cat((temp[i], pad_token), 1)
+            # attention mask
+            unpadded = torch.tensor([[1] * seq_len], dtype=torch.int32)
+            padded = torch.tensor([[0] * (max_len - seq_len)], dtype=torch.int32)
+            padding_mask.append(torch.cat((unpadded, padded), 1))
+        padding_mask = torch.cat(padding_mask, 0)
+        tensor = torch.cat(temp, 0)
+        result = {"input_ids": tensor, "padding_mask": padding_mask}
         return result
 
     def build_vocab(self, *args, **kwargs):

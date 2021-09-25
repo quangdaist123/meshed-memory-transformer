@@ -76,7 +76,7 @@ class MeshedDecoder(Module):
         self.register_state('running_mask_self_attention', torch.zeros((1, 1, 0)).byte())
         self.register_state('running_seq', torch.zeros((1,)).long())
 
-    def forward(self, input, padding_mask, encoder_output, mask_encoder):
+    def forward(self, input, encoder_output, mask_encoder):
         # input (b_s, seq_len)
         b_s, seq_len = input.shape[:2]
         mask_queries = (input != self.padding_idx).unsqueeze(-1).float()  # (b_s, seq_len, 1)
@@ -95,7 +95,7 @@ class MeshedDecoder(Module):
             self.running_seq.add_(1)
             seq = self.running_seq
 
-        out = self.word_emb(input, attention_mask=padding_mask).last_hidden_state + self.pos_emb(seq)
+        out = self.word_emb(input).last_hidden_state + self.pos_emb(seq)
         for i, l in enumerate(self.layers):
             out = l(out, encoder_output, mask_queries, mask_self_attention, mask_encoder)
 

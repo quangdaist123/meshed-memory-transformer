@@ -28,8 +28,9 @@ def evaluate_loss(model, dataloader, loss_fn, text_field):
     with tqdm(desc='Epoch %d - validation' % e, unit='it', total=len(dataloader)) as pbar:
         with torch.no_grad():
             for it, (detections, captions) in enumerate(dataloader):
-                detections, captions = detections.to(device), captions.to(device)
-                out = model(detections, captions)
+                input_ids, _, padding_mask = captions.values()
+                detections, captions, padding_mask = detections.to(device), input_ids.to(device), padding_mask.to(device)
+                out = model(detections, captions, padding_mask)
                 captions = captions[:, 1:].contiguous()
                 out = out[:, :-1].contiguous()
                 loss = loss_fn(out.view(-1, 64000), captions.view(-1))
