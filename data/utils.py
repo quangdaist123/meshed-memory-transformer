@@ -63,7 +63,7 @@ def get_tokenizer(tokenizer):
             import torch
             from transformers import AutoTokenizer
             tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base", use_fast=False)
-            return lambda s: tokenizer.encode(s)
+            return lambda s: tokenizer
         except ImportError:
             print("Please install #### Phobert.")
             raise

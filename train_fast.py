@@ -72,7 +72,7 @@ def train_xe(model, dataloader, optim, text_field):
     running_loss = .0
     with tqdm(desc='Epoch %d - train' % e, unit='it', total=len(dataloader)) as pbar:
         for it, (detections, captions) in enumerate(dataloader):
-            input_ids, padding_mask = captions.values()
+            input_ids, _, padding_mask = captions.values()
             detections, captions, padding_mask = detections.to(device), input_ids.to(device), padding_mask.to(device),
             out = model(detections, captions, padding_mask)
             optim.zero_grad()
