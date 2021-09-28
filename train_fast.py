@@ -40,7 +40,7 @@ def evaluate_loss(model, dataloader, loss_fn, text_field):
                 result = tokenizer(temp, padding=True)
                 result = result.convert_to_tensors("pt")
                 captions = result["input_ids"].to("cuda")
-                out = out[:, :-1].contiguous()
+                out = out[:, :].contiguous()
                 loss = loss_fn(out.view(-1, 64000), captions.view(-1))
                 this_loss = loss.item()
                 running_loss += this_loss

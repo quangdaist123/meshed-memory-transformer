@@ -78,8 +78,14 @@ class MeshedDecoder(Module):
         self.register_state('running_seq', torch.zeros((1,)).long())
 
     def forward(self, input, encoder_output, mask_encoder):
-        if input[0] is not None and isinstance(input, tuple):
+        if isinstance(input, tuple):
             temp = [torch.tensor([self.tokenizer.encode(line)]) for line in input if line]
+            temp = list
+            for i in range(len(input)):
+                if temp[i]:
+                    temp[i] = torch.tensor([self.tokenizer.encode(input[i])])
+                else:
+                    temp[i] = ["none input"]
             max_len = 0
             for line in temp:
                 if line.shape[1] > max_len:
@@ -87,17 +93,27 @@ class MeshedDecoder(Module):
 
             padding_mask = []
             for i in range(len(temp)):
-                seq_len = temp[i].shape[1]
-                pad_num = int(max_len - seq_len)
-                pad_token = torch.tensor([[1] * pad_num], dtype=torch.int32)
-                temp[i] = torch.cat((temp[i], pad_token), 1)
-                # attention mask
-                unpadded = torch.tensor([[1] * seq_len], dtype=torch.int32)
-                padded = torch.tensor([[0] * (max_len - seq_len)], dtype=torch.int32)
-                padding_mask.append(torch.cat((unpadded, padded), 1))
+                is_none_input = (temp[i] == torch.tensor([[99999]])).sum()
+                if is_none_input:
+                    print("Bammmmmmmmmmmmm")
+                    pad_num = int(max_len - 2)
+                    pad_token = torch.tensor([[1] * pad_num], dtype=torch.int32)
+                    temp[i] = torch.cat((torch.tensor([[0, 2]]), pad_token), 1)
+                    unpadded = torch.tensor([[1] * 2], dtype=torch.int32)
+                    padded = torch.tensor([[0] * (max_len - 2)], dtype=torch.int32)
+                    padding_mask.append(torch.cat((unpadded, padded), 1))
+
+                else:
+                    seq_len = temp[i].shape[1]
+                    pad_num = int(max_len - seq_len)
+                    pad_token = torch.tensor([[1] * pad_num], dtype=torch.int32)
+                    temp[i] = torch.cat((temp[i], pad_token), 1)
+                    # attention mask
+                    unpadded = torch.tensor([[1] * seq_len], dtype=torch.int32)
+                    padded = torch.tensor([[0] * (max_len - seq_len)], dtype=torch.int32)
+                    padding_mask.append(torch.cat((unpadded, padded), 1))
             padding_mask = torch.cat(padding_mask, 0)
             input = torch.cat(temp, 0)
-
             input, padding_mask = input.to("cuda"), padding_mask.to("cuda")
 
         b_s, seq_len = input.shape[:2]
@@ -116,7 +132,7 @@ class MeshedDecoder(Module):
         if self._is_stateful:
             self.running_seq.add_(1)
             seq = self.running_seq
-        if input[0] is not None and isinstance(input, tuple):
+        if isinstance(input, tuple):
             out = self.word_emb(input, attention_mask=padding_mask).last_hidden_state + self.pos_emb(seq)
         else:
             out = self.word_emb(input).last_hidden_state + self.pos_emb(seq)

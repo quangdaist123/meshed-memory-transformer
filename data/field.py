@@ -353,14 +353,12 @@ class TextField(RawField):
         elif isinstance(word_idxs, torch.Tensor) and word_idxs.ndimension() == 1:
             return self.decode(word_idxs.unsqueeze(0), join_words)[0]
 
-        from transformers import AutoTokenizer
-        tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base", use_fast=False)
 
         captions = []
         for line in word_idxs:
             words = []
             for word in line:
-                words.append(tokenizer.decode([word]))
+                words.append(self.tokenize.decode([word]))
             captions.append(words)
         return captions
         # captions = []
