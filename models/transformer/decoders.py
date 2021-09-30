@@ -79,13 +79,12 @@ class MeshedDecoder(Module):
 
     def forward(self, input, encoder_output, mask_encoder):
         if isinstance(input, tuple):
-            temp = [torch.tensor([self.tokenizer.encode(line)]) for line in input if line]
-            temp = list
+            temp = list(input)
             for i in range(len(input)):
                 if temp[i]:
                     temp[i] = torch.tensor([self.tokenizer.encode(input[i])])
                 else:
-                    temp[i] = ["none input"]
+                    temp[i] = torch.tensor([[99999]])
             max_len = 0
             for line in temp:
                 if line.shape[1] > max_len:
