@@ -135,12 +135,6 @@ class MeshedDecoder(Module):
             out = self.word_emb(input, attention_mask=padding_mask).last_hidden_state + self.pos_emb(seq)
         else:
             out = self.word_emb(input).last_hidden_state + self.pos_emb(seq)
-        # # Đảo lại giá trị bool trong mask_self_attn để thay thế padding_mask
-        # # Đã cùng shape
-        # print("mask_self_attention", mask_self_attention[:, -1, -1, :])
-        # print("mask_self_attention", mask_self_attention[:, -1, -1, :].shape)
-        # print("padding_mask", padding_mask)
-        # print("padding_mask", padding_mask.shape)
         for i, l in enumerate(self.layers):
             out = l(out, encoder_output, mask_queries, mask_self_attention, mask_encoder)
 
