@@ -146,14 +146,14 @@ if __name__ == '__main__':
     parser.add_argument('--resume_last', action='store_true')
     parser.add_argument('--resume_best', action='store_true')
     parser.add_argument('--features_path', type=str, default="")
-    parser.add_argument('--annotation_folder', type=str, default="")
+    parser.add_argument('--annotation_paths', type=str, default="")
     parser.add_argument('--logs_folder', type=str, default="")
     args = parser.parse_args()
     print(args)
 
     # Hardcode paths
     args.features_path = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H/viecap4h_detections.hdf5"
-    args.annotation_folder = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H"
+    args.annotation_paths = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H"
     args.m = 40
 
     #
@@ -169,7 +169,7 @@ if __name__ == '__main__':
                            remove_punctuation=True, nopoints=False)
 
     # Create the dataset
-    dataset = COCO(image_field, text_field, 'coco/images/', args.annotation_folder, args.annotation_folder)
+    dataset = COCO(image_field, text_field, 'coco/images/', args.annotation_paths, args.annotation_paths)
     train_dataset, val_dataset, test_dataset = dataset.splits
 
     if not os.path.isfile('vocab_%s.pkl' % args.exp_name):

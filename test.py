@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
     # Hardcode paths
     args.features_path = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/uitviic_detections.hdf5"
-    args.annotation_folder = "/content/drive/MyDrive/Images"
+    args.annotation_paths = "/content/drive/MyDrive/Images"
     args.m = 40
 
     print('Meshed-Memory Transformer Evaluation')
@@ -88,7 +88,7 @@ if __name__ == '__main__':
                            remove_punctuation=True, nopoints=False)
 
     # Create the dataset
-    dataset = COCO(image_field, text_field, 'coco/images/', args.annotation_folder, args.annotation_folder)
+    dataset = COCO(image_field, text_field, 'coco/images/', args.annotation_paths, args.annotation_paths)
     _, _, test_dataset = dataset.splits
     text_field.vocab = pickle.load(open('vocab_.pkl', 'rb'))
 

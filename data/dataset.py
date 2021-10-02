@@ -183,15 +183,15 @@ class COCO(PairedDataset):
                  cut_validation=False):
         roots = {}
         roots['train'] = {
-            'img': os.path.join(img_root, 'train'),
+            'img': os.path.join(img_root, 'Images'),
             'cap': os.path.join(ann_root, 'viecap4h_train_2017.json')
         }
         roots['val'] = {
-            'img': os.path.join(img_root, 'val'),
+            'img': os.path.join(img_root, 'Images'),
             'cap': os.path.join(ann_root, 'viecap4h_val_2017.json')
         }
         roots['test'] = {
-            'img': os.path.join(img_root, 'test'),
+            'img': os.path.join(img_root, 'Images'),
             'cap': os.path.join(ann_root, 'viecap4h_val_2017.json')
         }
         roots['trainrestval'] = {
