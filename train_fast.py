@@ -80,21 +80,6 @@ def train_xe(model, dataloader, optim, text_field):
             out = out[:, :-1].contiguous()
             loss = loss_fn(out.view(-1, len(text_field.vocab)), captions_gt.view(-1))
             loss.backward()
-            print("CAPTION_GT")
-            print("captions_gt.view(-1)", captions_gt.view(-1))
-            print("captions_gt.shape", captions_gt.shape)
-            print("captions_gt.view(-1).shape", captions_gt.view(-1).shape)
-            print("captions_gt.view(-1)", captions_gt.view(-1))
-            print("================")
-            print("out[:, :-1].contiguous().shape", out.shape)
-            print("out in loss_fn out.view(-1, len(text_field.vocab))", out.view(-1, len(text_field.vocab)).shape)
-            print("out", out)
-            print("=================")
-            print("LOSS")
-            print(loss.shape)
-            print(loss)
-            exit()
-
             optim.step()
             this_loss = loss.item()
             running_loss += this_loss
@@ -167,8 +152,8 @@ if __name__ == '__main__':
     print(args)
 
     # Hardcode paths
-    args.features_path = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/uitviic_detections.hdf5"
-    args.annotation_folder = "/content/drive/MyDrive/Images"
+    args.features_path = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H/viecap4h_detections.hdf5"
+    args.annotation_folder = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H"
     args.m = 40
 
     #
@@ -224,9 +209,11 @@ if __name__ == '__main__':
 
     if args.resume_last or args.resume_best:
         if args.resume_last:
-            fname = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_last.pth" % args.exp_name
+            fname = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_viet4cap_last.pth" % \
+                    args.exp_name
         else:
-            fname = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_best.pth" % args.exp_name
+            fname = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_viet4cap_best.pth" % \
+                    args.exp_name
 
         if os.path.exists(fname):
             data = torch.load(fname)
@@ -309,7 +296,9 @@ if __name__ == '__main__':
                 exit_train = True
 
         if switch_to_rl and not best:
-            data = torch.load("/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_best.pth" % args.exp_name)
+            data = torch.load(
+                "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_viet4cap_best.pth" %
+                args.exp_name)
             torch.set_rng_state(data['torch_rng_state'])
             torch.cuda.set_rng_state(data['cuda_rng_state'])
             np.random.set_state(data['numpy_rng_state'])
@@ -332,10 +321,10 @@ if __name__ == '__main__':
             'patience': patience,
             'best_cider': best_cider,
             'use_rl': use_rl,
-        }, "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_last.pth" % args.exp_name)
-
+        }, "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_viet4cap_last.pth" % args.exp_name)
         if best:
-            copyfile("/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_last.pth" % args.exp_name, "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_best.pth" % args.exp_name)
+            copyfile(
+                "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_viet4cap_best.pth" % args.exp_name)
 
         if exit_train:
             writer.close()
