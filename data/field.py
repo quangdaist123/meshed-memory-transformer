@@ -104,18 +104,18 @@ class ImageDetectionsField(RawField):
         super(ImageDetectionsField, self).__init__(preprocessing, postprocessing)
 
     def preprocess(self, x, avoid_precomp=False):
-        image_id = int(x.split('/')[-1].split('.')[0])
+        image_id = x.split('/')[-1].split('.')[0]
         ff = open("mesh_caps_ids.txt", "a+", encoding="utf8")
         ff.write(str(image_id))
         ff.write("\n")
         ff.close()
         try:
             f = h5py.File(self.detections_path, 'r')
-            precomp_data = f['%d_features' % image_id][()]
+            precomp_data = f['%s_features' % image_id][()]
             if self.sort_by_prob:
-                precomp_data = precomp_data[np.argsort(np.max(f['%d_cls_prob' % image_id][()], -1))[::-1]]
+                precomp_data = precomp_data[np.argsort(np.max(f['%s_cls_prob' % image_id][()], -1))[::-1]]
         except KeyError:
-            warnings.warn('Could not find detections for %d' % image_id)
+            warnings.warn('Could not find detections for %s' % image_id)
             precomp_data = np.random.rand(10,2048)
 
         delta = self.max_detections - precomp_data.shape[0]
