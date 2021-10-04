@@ -172,12 +172,12 @@ if __name__ == '__main__':
     dataset = COCO(image_field, text_field, 'coco/images/', args.annotation_paths, args.annotation_paths)
     train_dataset, val_dataset, test_dataset = dataset.splits
 
-    if not os.path.isfile('vocab_%s.pkl' % args.exp_name):
+    if not os.path.isfile('/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/vocab_viet4cap_m2.pkl'):
         print("Building vocabulary")
         text_field.build_vocab(train_dataset, val_dataset, min_freq=5)
         pickle.dump(text_field.vocab, open('vocab_%s.pkl' % args.exp_name, 'wb'))
     else:
-        text_field.vocab = pickle.load(open('vocab_%s.pkl' % args.exp_name, 'rb'))
+        text_field.vocab = pickle.load(open('/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/vocab_viet4cap_m2.pkl' % args.exp_name, 'rb'))
 
     # Model and dataloaders
     encoder = MemoryAugmentedEncoder(3, 0, attention_module=ScaledDotProductAttentionMemory,
