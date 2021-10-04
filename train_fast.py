@@ -2,7 +2,7 @@ import random
 from data import ImageDetectionsField, TextField, RawField
 from data import COCO, DataLoader
 import evaluation
-from evaluation import PTBTokenizer, Cider
+from evaluation import PTBTokenizer, Cider, Bleu
 from models.transformer import Transformer, MemoryAugmentedEncoder, MeshedDecoder, ScaledDotProductAttentionMemory
 import torch
 from torch.optim import Adam
@@ -92,7 +92,7 @@ def train_xe(model, dataloader, optim, text_field):
     return loss
 
 
-def train_scst(model, dataloader, optim, cider, text_field):
+def train_scst(model, dataloader, optim, bleu, text_field):
     # Training with self-critical
     tokenizer_pool = multiprocessing.Pool()
     running_reward = .0
@@ -113,7 +113,7 @@ def train_scst(model, dataloader, optim, cider, text_field):
             caps_gen = text_field.decode(outs.view(-1, seq_len))
             caps_gt = list(itertools.chain(*([c, ] * beam_size for c in caps_gt)))
             caps_gen, caps_gt = tokenizer_pool.map(evaluation.PTBTokenizer.tokenize, [caps_gen, caps_gt])
-            reward = cider.compute_score(caps_gt, caps_gen)[1].astype(np.float32)
+            reward = bleu.compute_score(caps_gt, caps_gen)[1].astype(np.float32)
             reward = torch.from_numpy(reward).to(device).view(detections.shape[0], beam_size)
             reward_baseline = torch.mean(reward, -1, keepdim=True)
             loss = -torch.mean(log_probs, -1) * (reward - reward_baseline)
@@ -187,7 +187,7 @@ if __name__ == '__main__':
 
     dict_dataset_train = train_dataset.image_dictionary({'image': image_field, 'text': RawField()})
     ref_caps_train = list(train_dataset.text)
-    cider_train = Cider(PTBTokenizer.tokenize(ref_caps_train))
+    bleu_train = Bleu(PTBTokenizer.tokenize(ref_caps_train))
     dict_dataset_val = val_dataset.image_dictionary({'image': image_field, 'text': RawField()})
     dict_dataset_test = test_dataset.image_dictionary({'image': image_field, 'text': RawField()})
 
@@ -203,7 +203,7 @@ if __name__ == '__main__':
     scheduler = LambdaLR(optim, lambda_lr)
     loss_fn = NLLLoss(ignore_index=text_field.vocab.stoi['<pad>'])
     use_rl = False
-    best_cider = .0
+    best_bleu = .0
     patience = 0
     start_epoch = 0
 
@@ -225,11 +225,11 @@ if __name__ == '__main__':
             optim.load_state_dict(data['optimizer'])
             scheduler.load_state_dict(data['scheduler'])
             start_epoch = data['epoch'] + 1
-            best_cider = data['best_cider']
+            best_bleu = data['best_bleu']
             patience = data['patience']
             use_rl = data['use_rl']
-            print('Resuming from epoch %d, validation loss %f, and best cider %f' % (
-                data['epoch'], data['val_loss'], data['best_cider']))
+            print('Resuming from epoch %d, validation loss %f, and best avg bleu %f' % (
+                data['epoch'], data['val_loss'], data['best_bleu']))
 
     print("Training starts")
     for e in range(start_epoch, start_epoch + 100):
@@ -245,7 +245,7 @@ if __name__ == '__main__':
             train_loss = train_xe(model, dataloader_train, optim, text_field)
             writer.add_scalar('data/train_loss', train_loss, e)
         else:
-            train_loss, reward, reward_baseline = train_scst(model, dict_dataloader_train, optim, cider_train, text_field)
+            train_loss, reward, reward_baseline = train_scst(model, dict_dataloader_train, optim, bleu_train, text_field)
             writer.add_scalar('data/train_loss', train_loss, e)
             writer.add_scalar('data/reward', reward, e)
             writer.add_scalar('data/reward_baseline', reward_baseline, e)
@@ -258,6 +258,7 @@ if __name__ == '__main__':
         scores = evaluate_metrics(model, dict_dataloader_val, text_field)
         print("Validation scores", scores)
         val_cider = scores['CIDEr']
+        val_bleu = (scores['BLEU'][0] + scores['BLEU'][1] + scores['BLEU'][2] + scores['BLEU'][3])/4
         writer.add_scalar('data/val_cider', val_cider, e)
         writer.add_scalar('data/val_bleu1', scores['BLEU'][0], e)
         writer.add_scalar('data/val_bleu4', scores['BLEU'][3], e)
@@ -275,8 +276,8 @@ if __name__ == '__main__':
 
         # Prepare for next epoch
         best = False
-        if val_cider >= best_cider:
-            best_cider = val_cider
+        if val_bleu >= best_bleu:
+            best_bleu = val_bleu
             patience = 0
             best = True
         else:
@@ -284,7 +285,7 @@ if __name__ == '__main__':
 
         switch_to_rl = False
         exit_train = False
-        if patience == 5:
+        if patience == 8:
             if not use_rl:
                 use_rl = True
                 switch_to_rl = True
@@ -304,8 +305,8 @@ if __name__ == '__main__':
             np.random.set_state(data['numpy_rng_state'])
             random.setstate(data['random_rng_state'])
             model.load_state_dict(data['state_dict'])
-            print('Resuming from epoch %d, validation loss %f, and best cider %f' % (
-                data['epoch'], data['val_loss'], data['best_cider']))
+            print('Resuming from epoch %d, validation loss %f, and best bleu %f' % (
+                data['epoch'], data['val_loss'], data['best_bleu']))
 
         torch.save({
             'torch_rng_state': torch.get_rng_state(),
@@ -314,12 +315,12 @@ if __name__ == '__main__':
             'random_rng_state': random.getstate(),
             'epoch': e,
             'val_loss': val_loss,
-            'val_cider': val_cider,
+            'val_bleu': val_bleu,
             'state_dict': model.state_dict(),
             'optimizer': optim.state_dict(),
             'scheduler': scheduler.state_dict(),
             'patience': patience,
-            'best_cider': best_cider,
+            'best_bleu': best_bleu,
             'use_rl': use_rl,
         }, "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_viet4cap_last.pth" % args.exp_name)
         if best:

@@ -257,7 +257,7 @@ class COCO(PairedDataset):
                 ann_id = ids[index]
                 caption = coco.anns[ann_id]['caption']
                 img_id = coco.anns[ann_id]['image_id']
-                filename = coco.loadImgs(img_id)[0]['id']
+                filename = str(coco.loadImgs(img_id)[0]['id'])
 
                 example = Example.fromdict({'image': os.path.join(img_root, filename), 'text': caption})
 
