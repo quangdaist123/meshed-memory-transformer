@@ -266,13 +266,13 @@ if __name__ == '__main__':
         writer.add_scalar('data/val_rouge', scores['ROUGE'], e)
 
         # Test scores
-        scores = evaluate_metrics(model, dict_dataloader_test, text_field)
-        print("Test scores", scores)
-        writer.add_scalar('data/test_cider', scores['CIDEr'], e)
-        writer.add_scalar('data/test_bleu1', scores['BLEU'][0], e)
-        writer.add_scalar('data/test_bleu4', scores['BLEU'][3], e)
-        writer.add_scalar('data/test_meteor', scores['METEOR'], e)
-        writer.add_scalar('data/test_rouge', scores['ROUGE'], e)
+        # scores = evaluate_metrics(model, dict_dataloader_test, text_field)
+        # print("Test scores", scores)
+        writer.add_scalar('data/test_cider', 0, e)
+        writer.add_scalar('data/test_bleu1', 0, e)
+        writer.add_scalar('data/test_bleu4', 0, e)
+        writer.add_scalar('data/test_meteor', 0, e)
+        writer.add_scalar('data/test_rouge', 0, e)
 
         # Prepare for next epoch
         best = False

@@ -74,8 +74,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Hardcode paths
-    args.features_path = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/uitviic_detections.hdf5"
-    args.annotation_paths = "/content/drive/MyDrive/Images"
+    args.features_path = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H/viecap4h_test_detections.hdf5"
+    args.annotation_paths = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H"
     args.m = 40
 
     print('Meshed-Memory Transformer Evaluation')
@@ -90,7 +90,7 @@ if __name__ == '__main__':
     # Create the dataset
     dataset = COCO(image_field, text_field, 'coco/images/', args.annotation_paths, args.annotation_paths)
     _, _, test_dataset = dataset.splits
-    text_field.vocab = pickle.load(open('vocab_.pkl', 'rb'))
+    text_field.vocab = pickle.load(open('/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/vocab_viet4cap_m2.pkl', 'rb'))
 
     # Model and dataloaders
     encoder = MemoryAugmentedEncoder(3, 0, attention_module=ScaledDotProductAttentionMemory,
@@ -98,7 +98,7 @@ if __name__ == '__main__':
     decoder = MeshedDecoder(len(text_field.vocab), 54, 3, text_field.vocab.stoi['<pad>'])
     model = Transformer(text_field.vocab.stoi['<bos>'], encoder, decoder).to(device)
 
-    data = torch.load('/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/original_best_real.pth')
+    data = torch.load('/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/_viet4cap_best.pth')
     model.load_state_dict(data['state_dict'])
 
     dict_dataset_test = test_dataset.image_dictionary({'image': image_field, 'text': RawField()})

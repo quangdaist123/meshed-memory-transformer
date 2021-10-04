@@ -205,7 +205,7 @@ class COCO(PairedDataset):
             ids['val'] = np.load(os.path.join(id_root, 'viecap4h_val_ids.npy'))
             if cut_validation:
                 ids['val'] = ids['val'][:5000]
-            ids['test'] = np.load(os.path.join(id_root, 'viecap4h_val_ids.npy'))
+            ids['test'] = np.load(os.path.join(id_root, 'viecap4h_test_ids.npy'))
         else:
             ids = None
 
@@ -254,10 +254,14 @@ class COCO(PairedDataset):
                     coco = coco_dataset[1]
                     img_root = root[1]
 
-                ann_id = ids[index]
-                caption = coco.anns[ann_id]['caption']
-                img_id = coco.anns[ann_id]['image_id']
-                filename = str(coco.loadImgs(img_id)[0]['id'])
+                if split != "test":
+                    ann_id = ids[index]
+                    caption = coco.anns[ann_id]['caption']
+                    img_id = coco.anns[ann_id]['image_id']
+                    filename = str(coco.loadImgs(img_id)[0]['id'])
+                else:
+                    caption = ""
+                    filename = str(ids[index])
 
                 example = Example.fromdict({'image': os.path.join(img_root, filename), 'text': caption})
 
