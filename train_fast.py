@@ -325,7 +325,7 @@ if __name__ == '__main__':
         }, "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_viet4cap_last.pth" % args.exp_name)
         if best:
             copyfile(
-                "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_viet4cap_best.pth" % args.exp_name)
+                "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_viet4cap_last.pth" % args.exp_name, "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_viet4cap_best.pth" % args.exp_name)
 
         if exit_train:
             writer.close()
