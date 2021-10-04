@@ -2,7 +2,7 @@ import random
 from data import ImageDetectionsField, TextField, RawField
 from data import COCO, DataLoader
 import evaluation
-from evaluation import PTBTokenizer, Cider, Bleu
+from evaluation import PTBTokenizer, Cider
 from models.transformer import Transformer, MemoryAugmentedEncoder, MeshedDecoder, ScaledDotProductAttentionMemory
 import torch
 from torch.optim import Adam
@@ -74,12 +74,12 @@ def train_xe(model, dataloader, optim, text_field):
         for it, (detections, captions) in enumerate(dataloader):
             detections, captions = detections.to(device), captions.to(device)
             out = model(detections, captions)
+            print("out.shape from model()", out.shape)
             optim.zero_grad()
             captions_gt = captions[:, 1:].contiguous()
             out = out[:, :-1].contiguous()
             loss = loss_fn(out.view(-1, len(text_field.vocab)), captions_gt.view(-1))
             loss.backward()
-
             optim.step()
             this_loss = loss.item()
             running_loss += this_loss
@@ -92,7 +92,7 @@ def train_xe(model, dataloader, optim, text_field):
     return loss
 
 
-def train_scst(model, dataloader, optim, bleu, text_field):
+def train_scst(model, dataloader, optim, cider, text_field):
     # Training with self-critical
     tokenizer_pool = multiprocessing.Pool()
     running_reward = .0
@@ -113,7 +113,7 @@ def train_scst(model, dataloader, optim, bleu, text_field):
             caps_gen = text_field.decode(outs.view(-1, seq_len))
             caps_gt = list(itertools.chain(*([c, ] * beam_size for c in caps_gt)))
             caps_gen, caps_gt = tokenizer_pool.map(evaluation.PTBTokenizer.tokenize, [caps_gen, caps_gt])
-            reward = bleu.compute_score(caps_gt, caps_gen)[1].astype(np.float32)
+            reward = cider.compute_score(caps_gt, caps_gen)[1].astype(np.float32)
             reward = torch.from_numpy(reward).to(device).view(detections.shape[0], beam_size)
             reward_baseline = torch.mean(reward, -1, keepdim=True)
             loss = -torch.mean(log_probs, -1) * (reward - reward_baseline)
@@ -138,20 +138,25 @@ def train_scst(model, dataloader, optim, bleu, text_field):
 if __name__ == '__main__':
     device = torch.device('cuda')
     parser = argparse.ArgumentParser(description='Meshed-Memory Transformer')
-    parser.add_argument('--exp_name', type=str, default='m2_transformer')
-    parser.add_argument('--batch_size', type=int, default=10)
-    parser.add_argument('--workers', type=int, default=0)
-    parser.add_argument('--m', type=int, default=40)
+    parser.add_argument('--exp_name', type=str, default="")
+    parser.add_argument('--batch_size', type=int, default=8)
+    parser.add_argument('--workers', type=int, default=8)
     parser.add_argument('--head', type=int, default=8)
     parser.add_argument('--warmup', type=int, default=10000)
     parser.add_argument('--resume_last', action='store_true')
     parser.add_argument('--resume_best', action='store_true')
-    parser.add_argument('--features_path', type=str)
-    parser.add_argument('--annotation_folder', type=str)
-    parser.add_argument('--logs_folder', type=str, default='tensorboard_logs')
+    parser.add_argument('--features_path', type=str, default="")
+    parser.add_argument('--annotation_paths', type=str, default="")
+    parser.add_argument('--logs_folder', type=str, default="")
     args = parser.parse_args()
     print(args)
 
+    # Hardcode paths
+    args.features_path = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H/viecap4h_detections.hdf5"
+    args.annotation_paths = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H"
+    args.m = 40
+
+    #
     print('Meshed-Memory Transformer Training')
 
     writer = SummaryWriter(log_dir=os.path.join(args.logs_folder, args.exp_name))
@@ -182,7 +187,7 @@ if __name__ == '__main__':
 
     dict_dataset_train = train_dataset.image_dictionary({'image': image_field, 'text': RawField()})
     ref_caps_train = list(train_dataset.text)
-    bleu_train = Bleu(PTBTokenizer.tokenize(ref_caps_train))
+    cider_train = Cider(PTBTokenizer.tokenize(ref_caps_train))
     dict_dataset_val = val_dataset.image_dictionary({'image': image_field, 'text': RawField()})
     dict_dataset_test = test_dataset.image_dictionary({'image': image_field, 'text': RawField()})
 
@@ -198,15 +203,17 @@ if __name__ == '__main__':
     scheduler = LambdaLR(optim, lambda_lr)
     loss_fn = NLLLoss(ignore_index=text_field.vocab.stoi['<pad>'])
     use_rl = False
-    best_bleu = .0
+    best_cider = .0
     patience = 0
     start_epoch = 0
 
     if args.resume_last or args.resume_best:
         if args.resume_last:
-            fname = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_last.pth" % args.exp_name
+            fname = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_viet4cap_last.pth" % \
+                    args.exp_name
         else:
-            fname = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_best.pth" % args.exp_name
+            fname = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_viet4cap_best.pth" % \
+                    args.exp_name
 
         if os.path.exists(fname):
             data = torch.load(fname)
@@ -218,11 +225,11 @@ if __name__ == '__main__':
             optim.load_state_dict(data['optimizer'])
             scheduler.load_state_dict(data['scheduler'])
             start_epoch = data['epoch'] + 1
-            best_bleu = data['best_bleu']
+            best_cider = data['best_cider']
             patience = data['patience']
             use_rl = data['use_rl']
-            print('Resuming from epoch %d, validation loss %f, and best bleu %f' % (
-                data['epoch'], data['val_loss'], data['best_bleu']))
+            print('Resuming from epoch %d, validation loss %f, and best cider %f' % (
+                data['epoch'], data['val_loss'], data['best_cider']))
 
     print("Training starts")
     for e in range(start_epoch, start_epoch + 100):
@@ -238,7 +245,7 @@ if __name__ == '__main__':
             train_loss = train_xe(model, dataloader_train, optim, text_field)
             writer.add_scalar('data/train_loss', train_loss, e)
         else:
-            train_loss, reward, reward_baseline = train_scst(model, dict_dataloader_train, optim, bleu_train, text_field)
+            train_loss, reward, reward_baseline = train_scst(model, dict_dataloader_train, optim, cider_train, text_field)
             writer.add_scalar('data/train_loss', train_loss, e)
             writer.add_scalar('data/reward', reward, e)
             writer.add_scalar('data/reward_baseline', reward_baseline, e)
@@ -289,7 +296,9 @@ if __name__ == '__main__':
                 exit_train = True
 
         if switch_to_rl and not best:
-            data = torch.load("/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_best.pth" % args.exp_name)
+            data = torch.load(
+                "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_viet4cap_best.pth" %
+                args.exp_name)
             torch.set_rng_state(data['torch_rng_state'])
             torch.cuda.set_rng_state(data['cuda_rng_state'])
             np.random.set_state(data['numpy_rng_state'])
@@ -312,10 +321,10 @@ if __name__ == '__main__':
             'patience': patience,
             'best_cider': best_cider,
             'use_rl': use_rl,
-        }, "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_last.pth" % args.exp_name)
-
+        }, "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_viet4cap_last.pth" % args.exp_name)
         if best:
-            copyfile("/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_last.pth" % args.exp_name, "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_best.pth" % args.exp_name)
+            copyfile(
+                "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_viet4cap_best.pth" % args.exp_name)
 
         if exit_train:
             writer.close()
