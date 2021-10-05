@@ -67,13 +67,11 @@ class ValueDataset(Dataset):
             lengths = [0, ] + list(itertools.accumulate([len(x) for x in batch]))
             if isinstance(value_tensors_flattened, collections.Sequence) \
                     and any(isinstance(t, torch.Tensor) for t in value_tensors_flattened):
-                value_tensors = [[vt[s:e] for (s, e) in zip(lengths[:-1], lengths[1:])] for vt in
-                                 value_tensors_flattened]
+                value_tensors = [[vt[s:e] for (s, e) in zip(lengths[:-1], lengths[1:])] for vt in value_tensors_flattened]
             else:
                 value_tensors = [value_tensors_flattened[s:e] for (s, e) in zip(lengths[:-1], lengths[1:])]
 
             return value_tensors
-
         return collate
 
     def __getitem__(self, i):
@@ -124,7 +122,6 @@ class DictionaryDataset(Dataset):
             key_tensors = self.key_dataset.collate_fn()(key_batch)
             value_tensors = self.value_dataset.collate_fn()(value_batch)
             return key_tensors, value_tensors
-
         return collate
 
     def __getitem__(self, i):
@@ -208,7 +205,7 @@ class COCO(PairedDataset):
             ids['val'] = np.load(os.path.join(id_root, 'viecap4h_val_ids.npy'))
             if cut_validation:
                 ids['val'] = ids['val'][:5000]
-            ids['test'] = np.load(os.path.join(id_root, 'viecap4h_val_ids.npy'))
+            ids['test'] = np.load(os.path.join(id_root, 'viecap4h_test_ids.npy'))
         else:
             ids = None
 
@@ -257,10 +254,14 @@ class COCO(PairedDataset):
                     coco = coco_dataset[1]
                     img_root = root[1]
 
-                ann_id = ids[index]
-                caption = coco.anns[ann_id]['caption']
-                img_id = coco.anns[ann_id]['image_id']
-                filename = str(coco.loadImgs(img_id)[0]['id'])
+                if split != "test":
+                    ann_id = ids[index]
+                    caption = coco.anns[ann_id]['caption']
+                    img_id = coco.anns[ann_id]['image_id']
+                    filename = str(coco.loadImgs(img_id)[0]['id'])
+                else:
+                    caption = ""
+                    filename = str(ids[index])
 
                 example = Example.fromdict({'image': os.path.join(img_root, filename), 'text': caption})
 
@@ -272,3 +273,4 @@ class COCO(PairedDataset):
                     test_samples.append(example)
 
         return train_samples, val_samples, test_samples
+
