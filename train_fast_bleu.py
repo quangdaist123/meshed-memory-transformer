@@ -56,6 +56,10 @@ def evaluate_metrics(model, dataloader, text_field):
             caps_gen = text_field.decode(out, join_words=False)
             for i, (gts_i, gen_i) in enumerate(zip(caps_gt, caps_gen)):
                 gen_i = ' '.join([k for k, g in itertools.groupby(gen_i)])
+                ff = open("mesh_caps_ids.txt", "a+", encoding="utf8")
+                ff.write(gen_i.strip())
+                ff.write("\n")
+                ff.close()
                 gen['%d_%d' % (it, i)] = [gen_i, ]
                 gts['%d_%d' % (it, i)] = gts_i
             pbar.update()
@@ -234,6 +238,10 @@ if __name__ == '__main__':
 
     print("Training starts")
     for e in range(start_epoch, start_epoch + 100):
+        # Clear output from last epoch
+        ff = open("mesh_caps_ids.txt", "w", encoding="utf8")
+        ff.close()
+
         dataloader_train = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers,
                                       drop_last=True)
         dataloader_val = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
@@ -254,6 +262,7 @@ if __name__ == '__main__':
         # Validation loss
         val_loss = evaluate_loss(model, dataloader_val, loss_fn, text_field)
         writer.add_scalar('data/val_loss', val_loss, e)
+
 
         # Validation scores
         scores = evaluate_metrics(model, dict_dataloader_val, text_field)
