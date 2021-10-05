@@ -177,7 +177,7 @@ if __name__ == '__main__':
         text_field.build_vocab(train_dataset, val_dataset, min_freq=5)
         pickle.dump(text_field.vocab, open('vocab_%s.pkl' % args.exp_name, 'wb'))
     else:
-        text_field.vocab = pickle.load(open('/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/vocab_viet4cap_m2.pkl' % args.exp_name, 'rb'))
+        text_field.vocab = pickle.load(open('/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/vocab_viet4cap_m2.pkl', 'rb'))
 
     # Model and dataloaders
     encoder = MemoryAugmentedEncoder(3, 0, attention_module=ScaledDotProductAttentionMemory,
@@ -187,7 +187,7 @@ if __name__ == '__main__':
 
     dict_dataset_train = train_dataset.image_dictionary({'image': image_field, 'text': RawField()})
     ref_caps_train = list(train_dataset.text)
-    bleu_train = Bleu(PTBTokenizer.tokenize(ref_caps_train))
+    bleu_train = Bleu()
     dict_dataset_val = val_dataset.image_dictionary({'image': image_field, 'text': RawField()})
     dict_dataset_test = test_dataset.image_dictionary({'image': image_field, 'text': RawField()})
 
