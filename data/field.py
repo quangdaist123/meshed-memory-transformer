@@ -1,4 +1,5 @@
 # coding: utf8
+import json
 from collections import Counter, OrderedDict
 from torch.utils.data.dataloader import default_collate
 from itertools import chain
@@ -215,6 +216,10 @@ class TextField(RawField):
             tok for tok in [self.unk_token, self.pad_token, self.init_token,
                             self.eos_token]
             if tok is not None]))
+
+        with open('dict_vocab.json', 'w') as w:
+            json.dump(dict(counter), w, ensure_ascii=False)
+
         self.vocab = self.vocab_cls(counter, specials=specials, **kwargs)
 
     def pad(self, minibatch):
