@@ -113,7 +113,8 @@ def train_scst(model, dataloader, optim, bleu, text_field):
             caps_gen = text_field.decode(outs.view(-1, seq_len))
             caps_gt = list(itertools.chain(*([c, ] * beam_size for c in caps_gt)))
             caps_gen, caps_gt = tokenizer_pool.map(evaluation.PTBTokenizer.tokenize, [caps_gen, caps_gt])
-            reward = bleu.compute_score(caps_gt, caps_gen)[1].astype(np.float32)
+            temp = bleu.compute_score(caps_gt, caps_gen)[1]
+            reward = np.average(temp, axis=0).astype(np.float32)
             reward = torch.from_numpy(reward).to(device).view(detections.shape[0], beam_size)
             reward_baseline = torch.mean(reward, -1, keepdim=True)
             loss = -torch.mean(log_probs, -1) * (reward - reward_baseline)
