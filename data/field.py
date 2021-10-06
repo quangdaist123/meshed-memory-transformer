@@ -111,10 +111,22 @@ class ImageDetectionsField(RawField):
         ff.write("\n")
         ff.close()
         try:
-            f = h5py.File(self.detections_path, 'r')
-            precomp_data = f['%s_features' % image_id]["features"][()]
-            if self.sort_by_prob:
-                precomp_data = precomp_data[np.argsort(np.max(f['%s_cls_prob' % image_id][()], -1))[::-1]]
+            f_train = h5py.File(
+                "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H/viecap4h_train_detections"
+                ".hdf5",
+                'r')
+            f_val = h5py.File(
+                "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H/viecap4h_val_detections"
+                ".hdf5",
+                'r')
+            if image_id in list(f_train.keys()):
+                precomp_data = f_train['%s' % image_id]["features"][()]
+                if self.sort_by_prob:
+                    precomp_data = precomp_data[np.argsort(np.max(f_train['%s_cls_prob' % image_id][()], -1))[::-1]]
+            if image_id in list(f_val.keys()):
+                precomp_data = f_val['%s' % image_id]["features"][()]
+                if self.sort_by_prob:
+                    precomp_data = precomp_data[np.argsort(np.max(f_val['%s_cls_prob' % image_id][()], -1))[::-1]]
         except KeyError:
             warnings.warn('Could not find detections for %s' % image_id)
             precomp_data = np.random.rand(10,2048)
