@@ -52,7 +52,24 @@ def evaluate_metrics(model, dataloader, text_field):
         for it, (images, caps_gt) in enumerate(iter(dataloader)):
             images = images.to(device)
             with torch.no_grad():
+                #### pick 1 best result
                 out, _ = model.beam_search(images, 20, text_field.vocab.stoi['<eos>'], 5, out_size=1)
+
+                #### pick the longest in n best results in descending order
+                # temp_lens = torch.count_nonzero(out, dim=2)
+                # longest_id = (torch.max(torch.argmax(temp_lens, axis=1)))
+                # out = out[:, longest_id, :]
+
+                #### pick the longest in n best results in descending order
+                # temp_lens = torch.count_nonzero(out, dim=2)
+                # for i in range(len(temp_lens[0])):
+                #     if temp_lens[0][i] >= 10:
+                #         longest_id = i
+                #         break
+                #     elif i == len(temp_lens[0]) - 1:
+                #         longest_id = (torch.max(torch.argmax(temp_lens, axis=1)))
+                # out = out[:, longest_id, :]
+
             caps_gen = text_field.decode(out, join_words=False)
             for i, (gts_i, gen_i) in enumerate(zip(caps_gt, caps_gen)):
                 gen_i = ' '.join([k for k, g in itertools.groupby(gen_i)])
