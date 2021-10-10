@@ -30,11 +30,13 @@ def predict_captions(model, dataloader, text_field):
                 out, _ = model.beam_search(images, 20, text_field.vocab.stoi['<eos>'], 5, out_size=1)
 
                 #### pick the longest in n best results in descending order
+                # out, _ = model.beam_search(images, 20, text_field.vocab.stoi['<eos>'], 5, out_size=5)
                 # temp_lens = torch.count_nonzero(out, dim=2)
                 # longest_id = (torch.max(torch.argmax(temp_lens, axis=1)))
                 # out = out[:, longest_id, :]
 
                 #### pick the longest in n best results in descending order
+                # out, _ = model.beam_search(images, 20, text_field.vocab.stoi['<eos>'], 5, out_size=5)
                 # temp_lens = torch.count_nonzero(out, dim=2)
                 # for i in range(len(temp_lens[0])):
                 #     if temp_lens[0][i] >= 10:
@@ -54,29 +56,9 @@ def predict_captions(model, dataloader, text_field):
                 gen['%d_%d' % (it, i)] = [gen_i.strip(), ]
                 gts['%d_%d' % (it, i)] = gts_i
             pbar.update()
-    json.dump(result, f, ensure_ascii=False)
     gts = evaluation.PTBTokenizer.tokenize(gts)
     gen = evaluation.PTBTokenizer.tokenize(gen)
     scores, _ = evaluation.compute_scores(gts, gen)
-
-    # Write result in json format
-    import json
-    temp = []
-    with open("/content/mesh_caps_ids.txt", "r") as f:
-        for line in f:
-            temp.append(line.replace("\n", ""))
-
-    f = open("mesh_caps_ids_gts.json", "w+")
-    results = []
-    index = 0
-    while index != len(temp):
-        res = {"id": temp[index], "pred": temp[index + 1], "gts": temp[index + 2:index + 7]}
-        results.append(res)
-        index += 7
-    json.dump(results, f, ensure_ascii=False)
-    f.close()
-
-
     return scores
 
 
@@ -125,3 +107,5 @@ if __name__ == '__main__':
 
     scores = predict_captions(model, dict_dataloader_test, text_field)
     print(scores)
+    val_bleu = (scores['BLEU'][0] + scores['BLEU'][1] + scores['BLEU'][2] + scores['BLEU'][3]) / 4
+    print("Val_bleu: ", val_bleu)
