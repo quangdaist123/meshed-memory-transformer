@@ -205,7 +205,7 @@ class COCO(PairedDataset):
             ids['val'] = np.load(os.path.join(id_root, 'viecap4h_val_ids.npy'))
             if cut_validation:
                 ids['val'] = ids['val'][:5000]
-            ids['test'] = np.load(os.path.join(id_root, 'viecap4h_test_ids.npy'))
+            ids['test'] = np.load(os.path.join(id_root, 'viecap4h_test_ids.npy')) + 8026
         else:
             ids = None
 
