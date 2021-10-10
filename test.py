@@ -71,6 +71,8 @@ if __name__ == '__main__':
     parser.add_argument('--workers', type=int, default=0)
     parser.add_argument('--features_path', type=str)
     parser.add_argument('--annotation_folder', type=str)
+    parser.add_argument('--vocab_path', type=str, default="")
+    parser.add_argument('--checkpoint_path', type=str, default="")
     args = parser.parse_args()
 
     # Hardcode paths
@@ -90,7 +92,7 @@ if __name__ == '__main__':
     # Create the dataset
     dataset = COCO(image_field, text_field, 'coco/images/', args.annotation_paths, args.annotation_paths)
     _, _, test_dataset = dataset.splits
-    text_field.vocab = pickle.load(open('/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/vocab_viet4cap_m2.pkl', 'rb'))
+    text_field.vocab = pickle.load(open(args.vocab_path, 'rb'))
 
     # Model and dataloaders
     encoder = MemoryAugmentedEncoder(3, 0, attention_module=ScaledDotProductAttentionMemory,
@@ -98,7 +100,7 @@ if __name__ == '__main__':
     decoder = MeshedDecoder(len(text_field.vocab), 54, 3, text_field.vocab.stoi['<pad>'])
     model = Transformer(text_field.vocab.stoi['<bos>'], encoder, decoder).to(device)
 
-    data = torch.load('/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/_viet4cap_best.pth')
+    data = torch.load(args.checkpoint_path)
     model.load_state_dict(data['state_dict'])
 
     dict_dataset_test = test_dataset.image_dictionary({'image': image_field, 'text': RawField()})
