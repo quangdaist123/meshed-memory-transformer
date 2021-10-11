@@ -100,6 +100,7 @@ if __name__ == '__main__':
     model = Transformer(text_field.vocab.stoi['<bos>'], encoder, decoder).to(device)
 
     data = torch.load(args.checkpoint_path)
+    print("Val_bleu: ", data["val_bleu"])
     model.load_state_dict(data['state_dict'])
 
     dict_dataset_test = test_dataset.image_dictionary({'image': image_field, 'text': RawField()})
@@ -107,5 +108,5 @@ if __name__ == '__main__':
 
     scores = predict_captions(model, dict_dataloader_test, text_field)
     print(scores)
-    val_bleu = (scores['BLEU'][0] + scores['BLEU'][1] + scores['BLEU'][2] + scores['BLEU'][3]) / 4
-    print("Val_bleu: ", val_bleu)
+    test_bleu = (scores['BLEU'][0] + scores['BLEU'][1] + scores['BLEU'][2] + scores['BLEU'][3]) / 4
+    print("Test bleu: ", test_bleu)
