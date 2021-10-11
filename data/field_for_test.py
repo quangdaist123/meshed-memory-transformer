@@ -112,12 +112,10 @@ class ImageDetectionsField(RawField):
         ff.close()
         try:
             f_train = h5py.File(
-                "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H/viecap4h_test_detections"
-                ".hdf5",
+                "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H/viecap4h_test_detections.hdf5",
                 'r')
             f_val = h5py.File(
-                "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H/viecap4h_test_detections"
-                ".hdf5",
+                "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H/viecap4h_test_detections.hdf5",
                 'r')
             if image_id in list(f_train.keys()):
                 precomp_data = f_train['%s' % image_id]["features"][()]
