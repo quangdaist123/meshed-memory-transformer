@@ -56,11 +56,13 @@ def evaluate_metrics(model, dataloader, text_field):
                 out, _ = model.beam_search(images, 20, text_field.vocab.stoi['<eos>'], 5, out_size=1)
 
                 #### pick the longest in n best results in descending order
+                # out, _ = model.beam_search(images, 20, text_field.vocab.stoi['<eos>'], 5, out_size=5)
                 # temp_lens = torch.count_nonzero(out, dim=2)
                 # longest_id = (torch.max(torch.argmax(temp_lens, axis=1)))
                 # out = out[:, longest_id, :]
 
                 #### pick the longest in n best results in descending order
+                # out, _ = model.beam_search(images, 20, text_field.vocab.stoi['<eos>'], 5, out_size=5)
                 # temp_lens = torch.count_nonzero(out, dim=2)
                 # for i in range(len(temp_lens[0])):
                 #     if temp_lens[0][i] >= 10:
