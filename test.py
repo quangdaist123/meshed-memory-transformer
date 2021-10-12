@@ -88,3 +88,4 @@ if __name__ == '__main__':
 
     scores = predict_captions(model, dict_dataloader_test, text_field)
     print(scores)
+    print("Hi there")
