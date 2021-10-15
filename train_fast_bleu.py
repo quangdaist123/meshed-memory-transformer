@@ -267,10 +267,10 @@ if __name__ == '__main__':
         dataloader_train = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers,
                                       drop_last=True)
         dataloader_val = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.workers)
-        dict_dataloader_train = DataLoader(dict_dataset_train, batch_size=args.batch_size // 5, shuffle=True,
+        dict_dataloader_train = DataLoader(dict_dataset_train, batch_size=args.batch_size, shuffle=True,
                                            num_workers=args.workers)
-        dict_dataloader_val = DataLoader(dict_dataset_val, batch_size=args.batch_size // 5)
-        dict_dataloader_test = DataLoader(dict_dataset_test, batch_size=args.batch_size // 5)
+        dict_dataloader_val = DataLoader(dict_dataset_val, batch_size=args.batch_size)
+        dict_dataloader_test = DataLoader(dict_dataset_test, batch_size=args.batch_size)
 
         if not use_rl:
             train_loss = train_xe(model, dataloader_train, optim, text_field)
