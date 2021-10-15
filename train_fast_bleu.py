@@ -179,7 +179,7 @@ if __name__ == '__main__':
     # Hardcode paths
     args.features_path = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H/viecap4h_detections.hdf5"
     args.annotation_paths = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H"
-    args.vocab_path = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/Vocab/" + arg.vocab_path
+    args.vocab_path = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/Vocab/" + args.vocab_path
     args.m = 40
 
     #
@@ -270,7 +270,7 @@ if __name__ == '__main__':
         dict_dataloader_train = DataLoader(dict_dataset_train, batch_size=args.batch_size, shuffle=True,
                                            num_workers=args.workers)
         dict_dataloader_val = DataLoader(dict_dataset_val, batch_size=args.batch_size)
-        dict_dataloader_test = DataLoader(dict_dataset_test, batch_size=args.batch_size1)
+        dict_dataloader_test = DataLoader(dict_dataset_test, batch_size=args.batch_size)
 
         if not use_rl:
             train_loss = train_xe(model, dataloader_train, optim, text_field)
