@@ -184,15 +184,15 @@ class COCO(PairedDataset):
         roots = {}
         roots['train'] = {
             'img': os.path.join(img_root, 'Images'),
-            'cap': os.path.join(ann_root, '95_5_split/viecap4h_train_2017_new.json')
+            'cap': os.path.join(ann_root, 'viecap4h_train_2017.json')
         }
         roots['val'] = {
             'img': os.path.join(img_root, 'Images'),
-            'cap': os.path.join(ann_root, '95_5_split/viecap4h_val_2017_new.json')
+            'cap': os.path.join(ann_root, 'viecap4h_val_2017.json')
         }
         roots['test'] = {
             'img': os.path.join(img_root, 'Images'),
-            'cap': os.path.join(ann_root, '95_5_split/viecap4h_val_2017_new.json')
+            'cap': os.path.join(ann_root, 'viecap4h_val_2017.json')
         }
         roots['trainrestval'] = {
             'img': (roots['train']['img'], roots['val']['img']),
@@ -201,14 +201,13 @@ class COCO(PairedDataset):
 
         if id_root is not None:
             ids = {}
-            ids['train'] = np.load(os.path.join(id_root, '95_5_split/viecap4h_train_ids_new.npy'))
-            ids['val'] = np.load(os.path.join(id_root, '95_5_split/viecap4h_val_ids_new.npy'))
+            ids['train'] = np.load(os.path.join(id_root, 'viecap4h_train_ids.npy'))
+            ids['val'] = np.load(os.path.join(id_root, 'viecap4h_val_ids.npy'))
             if cut_validation:
                 ids['val'] = ids['val'][:5000]
-            ids['test'] = np.load(os.path.join(id_root, '95_5_split/viecap4h_val_ids_new.npy'))
+            ids['test'] = np.load(os.path.join(id_root, 'viecap4h_test_ids.npy')) + 8026
         else:
             ids = None
-
 
         with nostdout():
             self.train_examples, self.val_examples, self.test_examples = self.get_samples(roots, ids)
