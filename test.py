@@ -66,7 +66,7 @@ if __name__ == '__main__':
     device = torch.device('cuda')
 
     parser = argparse.ArgumentParser(description='Meshed-Memory Transformer')
-    parser.add_argument('--batch_size', type=int, default=1)
+    parser.add_argument('--batch_size', type=int, default=16)
     parser.add_argument('--workers', type=int, default=0)
     parser.add_argument('--features_path', type=str)
     parser.add_argument('--annotation_folder', type=str)
