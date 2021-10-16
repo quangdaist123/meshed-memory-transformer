@@ -104,12 +104,8 @@ class ImageDetectionsField(RawField):
 
 
 
-        self.f_train = h5py.File(
+        self.f_test = h5py.File(
             "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H/viecap4h_train_detections"
-            ".hdf5",
-            'r')
-        self.f_val = h5py.File(
-            "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H/viecap4h_val_detections"
             ".hdf5",
             'r')
         super(ImageDetectionsField, self).__init__(preprocessing, postprocessing)
@@ -121,14 +117,11 @@ class ImageDetectionsField(RawField):
         ff.write("\n")
         ff.close()
         try:
-            if image_id in list(self.f_train.keys()):
-                precomp_data = self.f_train['%s' % image_id]["features"][()]
+            if image_id in list(self.f_test.keys()):
+                precomp_data = self.f_test['%s' % image_id]["features"][()]
                 if self.sort_by_prob:
-                    precomp_data = precomp_data[np.argsort(np.max(self.f_train['%s_cls_prob' % image_id][()], -1))[::-1]]
-            if image_id in list(self.f_val.keys()):
-                precomp_data = self.f_val['%s' % image_id]["features"][()]
-                if self.sort_by_prob:
-                    precomp_data = precomp_data[np.argsort(np.max(self.f_val['%s_cls_prob' % image_id][()], -1))[::-1]]
+                    precomp_data = precomp_data[np.argsort(np.max(self.f_test['%s_cls_prob' % image_id][()], -1))[::-1]]
+
         except KeyError:
             warnings.warn('Could not find detections for %s' % image_id)
             precomp_data = np.random.rand(10,2048)
