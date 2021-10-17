@@ -272,14 +272,9 @@ if __name__ == '__main__':
         dict_dataloader_val = DataLoader(dict_dataset_val, batch_size=args.batch_size)
         dict_dataloader_test = DataLoader(dict_dataset_test, batch_size=args.batch_size)
 
-        if not use_rl:
-            train_loss = train_xe(model, dataloader_train, optim, text_field)
-            writer.add_scalar('data/train_loss', train_loss, e)
-        else:
-            train_loss, reward, reward_baseline = train_scst(model, dict_dataloader_train, optim, bleu_train, text_field)
-            writer.add_scalar('data/train_loss', train_loss, e)
-            writer.add_scalar('data/reward', reward, e)
-            writer.add_scalar('data/reward_baseline', reward_baseline, e)
+
+        train_loss = train_xe(model, dataloader_train, optim, text_field)
+        writer.add_scalar('data/train_loss', train_loss, e)
 
         # Validation loss
         val_loss = evaluate_loss(model, dataloader_val, loss_fn, text_field)
@@ -316,31 +311,6 @@ if __name__ == '__main__':
         else:
             patience += 1
 
-        switch_to_rl = False
-        exit_train = False
-        if patience == 8:
-            if not use_rl:
-                use_rl = True
-                switch_to_rl = True
-                patience = 0
-                optim = Adam(model.parameters(), lr=5e-6)
-                print("Switching to RL")
-            else:
-                print('patience reached.')
-                exit_train = True
-
-        if switch_to_rl and not best:
-            data = torch.load(
-                "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_viet4cap_best.pth" %
-                args.exp_name)
-            torch.set_rng_state(data['torch_rng_state'])
-            torch.cuda.set_rng_state(data['cuda_rng_state'])
-            np.random.set_state(data['numpy_rng_state'])
-            random.setstate(data['random_rng_state'])
-            model.load_state_dict(data['state_dict'])
-            print('Resuming from epoch %d, validation loss %f, and best bleu %f' % (
-                data['epoch'], data['val_loss'], data['best_bleu']))
-
         torch.save({
             'torch_rng_state': torch.get_rng_state(),
             'cuda_rng_state': torch.cuda.get_rng_state(),
@@ -360,6 +330,3 @@ if __name__ == '__main__':
             copyfile(
                 "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_viet4cap_last.pth" % args.exp_name, "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/%s_viet4cap_best.pth" % args.exp_name)
 
-        if exit_train:
-            writer.close()
-            break
