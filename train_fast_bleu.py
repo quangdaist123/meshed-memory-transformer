@@ -177,8 +177,8 @@ if __name__ == '__main__':
     print(args)
 
     # Hardcode paths
-    args.features_path = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H/viecap4h_detections.hdf5"
-    args.annotation_paths = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H"
+    args.features_path = "/content/drive/MyDrive/VieCap4H/viecap4h_detections.hdf5"
+    args.annotation_paths = "/content/drive/MyDrive/VieCap4H"
     args.vocab_path = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/Model/Vocab/" + args.vocab_path
     args.m = 40
 

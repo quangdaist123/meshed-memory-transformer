@@ -104,11 +104,11 @@ class ImageDetectionsField(RawField):
 
 
         self.f_train = h5py.File(
-            "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H/viecap4h_train_detections"
+            "/content/drive/MyDrive/VieCap4H/viecap4h_train_detections"
             ".hdf5",
             'r')
         self.f_val = h5py.File(
-            "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H/viecap4h_val_detections"
+            "/content/drive/MyDrive/VieCap4H/viecap4h_val_detections"
             ".hdf5",
             'r')
         super(ImageDetectionsField, self).__init__(preprocessing, postprocessing)

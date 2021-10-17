@@ -75,8 +75,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Hardcode paths
-    args.features_path = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H/viecap4h_test_detections.hdf5"
-    args.annotation_paths = "/content/drive/MyDrive/ColabNotebooks/UIT-MeshedMemoryTransformer/VieCap4H"
+    args.features_path = "/content/drive/MyDrive/VieCap4H/viecap4h_test_detections.hdf5"
+    args.annotation_paths = "/content/drive/MyDrive/VieCap4H"
     args.m = 40
 
     print('Meshed-Memory Transformer Evaluation')
